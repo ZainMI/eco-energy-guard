@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Menu } from "lucide-react";
+import { useState } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const links = [
@@ -14,6 +15,8 @@ const links = [
 ];
 
 export default function Navbar() {
+  const [open, setOpen] = useState(false);
+
   return (
     <header className="sticky top-0 z-50 border-b border-border/60 bg-background/85 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:h-20 sm:px-6">
@@ -57,7 +60,7 @@ export default function Navbar() {
         </Link>
 
         <div className="lg:hidden">
-          <Sheet>
+          <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger className="inline-flex h-10 w-10 items-center justify-center rounded-full border bg-white shadow-sm transition hover:bg-muted">
               <Menu className="h-5 w-5" />
             </SheetTrigger>
@@ -74,6 +77,7 @@ export default function Navbar() {
                   height={48}
                   className="h-12 w-12 rounded-full"
                 />
+
                 <div>
                   <p className="font-bold">Eco Energy Guard</p>
                   <p className="text-xs text-muted-foreground">
@@ -87,8 +91,11 @@ export default function Navbar() {
                   <Link
                     key={link.href}
                     href={link.href}
+                    onClick={() => setOpen(false)}
                     className="rounded-2xl px-4 py-4 text-xl font-semibold transition hover:bg-muted"
-                    style={{ animationDelay: `${index * 60}ms` }}
+                    style={{
+                      animationDelay: `${index * 60}ms`,
+                    }}
                   >
                     {link.label}
                   </Link>
@@ -96,6 +103,7 @@ export default function Navbar() {
 
                 <Link
                   href="/book"
+                  onClick={() => setOpen(false)}
                   className="mt-6 inline-flex h-14 items-center justify-center rounded-full bg-primary px-5 text-base font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90"
                 >
                   Book Inspection
