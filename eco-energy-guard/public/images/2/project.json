@@ -1,0 +1,14 @@
+{
+  "title": "Reflective Insulation Project",
+  "city": "Capital Region",
+  "state": "NY",
+  "description": "Installed reflective insulation to improve home comfort and reduce energy loss.",
+  "services": ["Reflective Insulation", "Energy Efficiency"],
+  "improvements": [
+    "Improved comfort",
+    "Reduced energy waste",
+    "Better insulation performance"
+  ],
+  "featured": true,
+  "imageFit": "contain"
+}
