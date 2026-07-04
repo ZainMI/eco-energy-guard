@@ -1,7 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ShieldCheck, UserCog, UserCheck, UserX, Shield } from "lucide-react";
+import {
+  ShieldCheck,
+  UserCog,
+  UserCheck,
+  UserX,
+  Shield,
+  ArrowLeft,
+} from "lucide-react";
+import Link from "next/link";
 import Container from "@/components/layout/Container";
 import { createClient } from "@/lib/supabase/client";
 
@@ -124,6 +132,13 @@ export default function AdminUsersPage() {
   return (
     <section className="min-h-screen bg-gradient-to-br from-stone-50 via-amber-50 to-emerald-50 py-10 sm:py-16">
       <Container>
+        <Link
+          href="/admin"
+          className="inline-flex items-center text-sm font-semibold text-primary"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Dashboard
+        </Link>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-sm font-semibold uppercase tracking-wide text-primary">

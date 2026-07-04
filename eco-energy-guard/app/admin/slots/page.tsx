@@ -1,11 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState, useMemo } from "react";
 import {
   CalendarClock,
   Plus,
   Trash2,
   Calendar as CalendarIcon,
+  ArrowLeft,
   ShieldCheck,
   ShieldAlert,
   Wrench,
@@ -280,7 +282,14 @@ export default function AdminSlotsPage() {
   return (
     <section className="min-h-screen bg-gradient-to-br from-stone-50 via-amber-50 to-emerald-50 py-10 sm:py-16">
       <Container>
-        <div className="border-b pb-6">
+        <Link
+          href="/admin"
+          className="inline-flex items-center text-sm font-semibold text-primary mb-8"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Dashboard
+        </Link>
+        <div className="border-b pb-6 ">
           <p className="text-sm font-semibold uppercase tracking-wide text-primary">
             Admin Management
           </p>

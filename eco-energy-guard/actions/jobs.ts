@@ -1275,3 +1275,140 @@ export async function createManualBookingAction(
     jobId: newJob.id,
   };
 }
+
+export async function resendLastEmailAction(
+  jobId: string,
+): Promise<ActionResult> {
+  const access = await requireSchedulerAccess();
+  if (!access.ok) return access;
+
+  const supabase = await createClient();
+
+  const { data: job } = await supabase
+    .from("jobs")
+    .select(
+      `
+      *,
+      customers (*),
+      inspection_slot:inspection_slot_id (*),
+      installation_slot:installation_slot_id (*)
+    `,
+    )
+    .eq("id", jobId)
+    .single();
+
+  if (!job) return { ok: false, message: "Job not found." };
+
+  const customer = Array.isArray(job.customers)
+    ? job.customers[0]
+    : job.customers;
+  if (!customer) return { ok: false, message: "Customer not found." };
+
+  const customerName = `${customer.first_name} ${customer.last_name}`;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const jobLink = `${siteUrl}/admin/jobs/${jobId}`;
+  const address = [
+    customer.address,
+    customer.city,
+    customer.state,
+    customer.zip,
+  ]
+    .filter(Boolean)
+    .join(", ");
+
+  try {
+    switch (job.status) {
+      case "inspection_scheduled": {
+        const slot = Array.isArray(job.inspection_slot)
+          ? job.inspection_slot[0]
+          : job.inspection_slot;
+        if (!slot) return { ok: false, message: "Inspection slot not found." };
+
+        const token = await createManageToken(jobId);
+        if (!token)
+          return { ok: false, message: "Could not create manage link." };
+        const manageLink = createCustomerManageLink(token);
+
+        await sendInspectionApprovedEmail({
+          to: customer.email,
+          customerName,
+          startsAt: slot.starts_at,
+          endsAt: slot.ends_at,
+          address,
+          manageLink,
+        });
+        return { ok: true, message: "Inspection approval email resent." };
+      }
+
+      case "reschedule_requested": {
+        const token = await createManageToken(jobId);
+        if (!token)
+          return { ok: false, message: "Could not create manage link." };
+        const manageLink = createCustomerManageLink(token);
+
+        await sendInspectionRescheduleEmail({
+          to: customer.email,
+          customerName,
+          manageLink,
+        });
+        return { ok: true, message: "Reschedule request email resent." };
+      }
+
+      case "estimate_sent": {
+        const token = await createManageToken(jobId);
+        if (!token)
+          return {
+            ok: false,
+            message: "Could not create installation scheduling link.",
+          };
+        const scheduleLink = `${siteUrl}/schedule-installation/${token}`;
+
+        await sendEstimateReadyEmail({
+          to: customer.email,
+          customerName,
+          estimateAmount: job.manual_estimate_amount,
+          customerNotes: job.customer_notes,
+          scheduleLink,
+        });
+        return { ok: true, message: "Estimate email resent to customer." };
+      }
+
+      case "installation_scheduled": {
+        const slot = Array.isArray(job.installation_slot)
+          ? job.installation_slot[0]
+          : job.installation_slot;
+        if (!slot)
+          return { ok: false, message: "Installation slot not found." };
+
+        await sendInstallationScheduledCustomerEmail({
+          to: customer.email,
+          customerName,
+          startsAt: slot.starts_at,
+          endsAt: slot.ends_at,
+          address,
+        });
+        return { ok: true, message: "Installation confirmation email resent." };
+      }
+
+      case "cancelled": {
+        await sendInspectionDeniedEmail({
+          to: customer.email,
+          customerName,
+        });
+        return { ok: true, message: "Job cancellation email resent." };
+      }
+
+      default:
+        return {
+          ok: false,
+          message: `No email to resend for job status: ${job.status}`,
+        };
+    }
+  } catch (error) {
+    return {
+      ok: false,
+      message:
+        error instanceof Error ? error.message : "Failed to resend email.",
+    };
+  }
+}

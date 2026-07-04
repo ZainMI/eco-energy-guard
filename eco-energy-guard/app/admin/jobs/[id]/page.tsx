@@ -25,6 +25,7 @@ import {
   approveInstallationAction,
   completeJobAction,
   sendEstimateAction,
+  resendLastEmailAction,
   requestInspectionRescheduleAction,
 } from "@/actions/jobs";
 
@@ -277,6 +278,20 @@ export default function AdminJobPage() {
     }
   }
 
+  async function resendLastEmail() {
+    if (!job) return;
+
+    const confirmed = window.confirm(
+      "Are you sure you want to resend the last email to the customer?",
+    );
+    if (!confirmed) return;
+
+    setMessage("Resending email...");
+    const result = await resendLastEmailAction(job.id);
+    setMessage(result.message);
+    // No need to reload job data for this action
+  }
+
   useEffect(() => {
     loadJob();
   }, []);
@@ -336,6 +351,16 @@ export default function AdminJobPage() {
           <span className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-primary shadow-sm">
             {statusLabels[job.status]}
           </span>
+        </div>
+
+        <div className="mt-6">
+          <button
+            type="button"
+            onClick={resendLastEmail}
+            className="inline-flex items-center rounded-full border bg-white px-4 py-2 text-xs font-semibold text-stone-700 shadow-sm transition hover:bg-muted"
+          >
+            <Mail className="mr-2 h-3.5 w-3.5" /> Resend Last Email to Customer
+          </button>
         </div>
 
         {message && (
