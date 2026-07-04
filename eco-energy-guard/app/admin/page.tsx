@@ -263,6 +263,14 @@ export default function AdminPage() {
             </Link>
 
             <Link
+              href="/admin/manual-booking"
+              className="inline-flex h-11 cursor-pointer items-center justify-center rounded-full border bg-white px-5 text-sm font-semibold shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:shadow-md"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Manual Booking
+            </Link>
+
+            <Link
               href="/admin/slots"
               className="inline-flex h-11 cursor-pointer items-center justify-center rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-md"
             >

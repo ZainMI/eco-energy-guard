@@ -993,3 +993,285 @@ export async function completeJobAction(jobId: string): Promise<ActionResult> {
     message: "Job marked as completed.",
   };
 }
+
+export async function createManualBookingAction(
+  formData: any,
+): Promise<ActionResult & { jobId?: string }> {
+  const access = await requireSchedulerAccess();
+  if (!access.ok) return access;
+
+  const {
+    bookingType,
+    firstName,
+    lastName,
+    email,
+    phone,
+    address,
+    city,
+    stateValue,
+    zip,
+    latitude,
+    longitude,
+    osmPlaceId,
+    date,
+    startTime,
+    endTime,
+    notes,
+    manualEstimateAmount,
+    teamIds,
+  } = formData;
+
+  // Validation
+  if (
+    !bookingType ||
+    !firstName ||
+    !lastName ||
+    !email ||
+    !address ||
+    !date ||
+    !startTime ||
+    !endTime
+  ) {
+    return { ok: false, message: "Please fill out all required fields." };
+  }
+  if (teamIds.length === 0) {
+    return { ok: false, message: "Please assign at least one team member." };
+  }
+  if (startTime >= endTime) {
+    return { ok: false, message: "End time must be after start time." };
+  }
+
+  const supabase = await createClient();
+
+  // 1. Find or create customer
+  let customerId = "";
+  const { data: existingCustomer } = await supabase
+    .from("customers")
+    .select("id")
+    .eq("email", email)
+    .single();
+
+  if (existingCustomer) {
+    customerId = existingCustomer.id;
+  } else {
+    const { data: newCustomer, error: customerError } = await supabase
+      .from("customers")
+      .insert({
+        first_name: firstName,
+        last_name: lastName,
+        email,
+        phone,
+        address,
+        city,
+        state: stateValue,
+        zip,
+        latitude,
+        longitude,
+        osm_place_id: osmPlaceId,
+      })
+      .select("id")
+      .single();
+
+    if (customerError || !newCustomer) {
+      return {
+        ok: false,
+        message: customerError?.message || "Could not create customer.",
+      };
+    }
+    customerId = newCustomer.id;
+  }
+
+  // 2. Create a one-off, unavailable slot
+  const starts_at = new Date(`${date}T${startTime}`).toISOString();
+  const ends_at = new Date(`${date}T${endTime}`).toISOString();
+
+  const { data: newSlot, error: slotError } = await supabase
+    .from("slots")
+    .insert({
+      type: bookingType,
+      starts_at,
+      ends_at,
+      is_available: false,
+      notes: "Manual booking",
+    })
+    .select("id")
+    .single();
+
+  if (slotError || !newSlot) {
+    return {
+      ok: false,
+      message: slotError?.message || "Could not create time slot.",
+    };
+  }
+
+  // 3. Create the job
+  const jobPayload: any = {
+    customer_id: customerId,
+    status:
+      bookingType === "inspection"
+        ? "inspection_scheduled"
+        : "installation_scheduled",
+  };
+  if (bookingType === "inspection") {
+    jobPayload.inspection_slot_id = newSlot.id;
+    jobPayload.issue_notes = notes;
+  } else {
+    jobPayload.installation_slot_id = newSlot.id;
+    jobPayload.customer_notes = notes;
+    jobPayload.manual_estimate_amount = manualEstimateAmount || null;
+  }
+
+  const { data: newJob, error: jobError } = await supabase
+    .from("jobs")
+    .insert(jobPayload)
+    .select("id")
+    .single();
+
+  if (jobError || !newJob) {
+    return { ok: false, message: jobError?.message || "Could not create job." };
+  }
+
+  // 4. Create job assignments
+  const assignments = teamIds.map((userId: string) => ({
+    job_id: newJob.id,
+    user_id: userId,
+    assignment_type: bookingType,
+  }));
+
+  await supabase.from("job_assignments").insert(assignments);
+
+  // 5. Send confirmation emails and calendar invites
+  try {
+    const { data: teamMembers } = await supabase
+      .from("users")
+      .select("email, full_name")
+      .in("id", teamIds);
+
+    if (!teamMembers)
+      throw new Error("Could not retrieve team member details.");
+
+    const teamEmails = teamMembers
+      .map((m) => m.email)
+      .filter(Boolean) as string[];
+    const fullAddress = [address, city, stateValue, zip]
+      .filter(Boolean)
+      .join(", ");
+    const customerName = `${firstName} ${lastName}`;
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+    const jobLink = `${siteUrl}/admin/jobs/${newJob.id}`;
+
+    if (bookingType === "inspection") {
+      const calendarUid = `inspection-${newJob.id}@ecoenergyguard.com`;
+      const icsContent = createCalendarInvite({
+        uid: calendarUid,
+        sequence: 0,
+        title: `Eco Energy Guard Inspection - ${customerName}`,
+        description: `Home energy inspection for ${customerName}.`,
+        location: fullAddress,
+        startsAt: starts_at,
+        endsAt: ends_at,
+        organizerEmail: process.env.SMTP_USER || "info@ecoenergyguard.com",
+        attendees: [email, ...teamEmails],
+        method: "REQUEST",
+      });
+
+      await sendInspectionApprovedEmail({
+        to: email,
+        customerName,
+        startsAt: starts_at,
+        endsAt: ends_at,
+        address: fullAddress,
+        manageLink: jobLink, // Admins can manage via job link
+        icsContent,
+      });
+
+      for (const member of teamMembers) {
+        if (!member.email) continue;
+        await sendInspectionAssignedEmail({
+          to: member.email,
+          workerName: member.full_name || member.email,
+          customerName,
+          customerEmail: email,
+          customerPhone: phone,
+          startsAt: starts_at,
+          endsAt: ends_at,
+          address: fullAddress,
+          issueNotes: notes,
+          jobLink,
+          icsContent,
+        });
+      }
+
+      await supabase
+        .from("jobs")
+        .update({
+          inspection_calendar_uid: calendarUid,
+          inspection_calendar_sequence: 0,
+        })
+        .eq("id", newJob.id);
+    } else {
+      // Installation
+      const calendarUid = `installation-${newJob.id}@ecoenergyguard.com`;
+      const icsContent = createCalendarInvite({
+        uid: calendarUid,
+        sequence: 0,
+        title: `Eco Energy Guard Installation - ${customerName}`,
+        description: `Installation appointment for ${customerName}.`,
+        location: fullAddress,
+        startsAt: starts_at,
+        endsAt: ends_at,
+        organizerEmail: process.env.SMTP_USER || "info@ecoenergyguard.com",
+        attendees: [email, ...teamEmails],
+        method: "REQUEST",
+      });
+
+      await sendInstallationScheduledCustomerEmail({
+        to: email,
+        customerName,
+        startsAt: starts_at,
+        endsAt: ends_at,
+        address: fullAddress,
+        icsContent,
+      });
+
+      for (const member of teamMembers) {
+        if (!member.email) continue;
+        await sendInstallationAssignedWorkerEmail({
+          to: member.email,
+          workerName: member.full_name || member.email,
+          customerName,
+          customerEmail: email,
+          customerPhone: phone,
+          startsAt: starts_at,
+          endsAt: ends_at,
+          address: fullAddress,
+          jobLink,
+          icsContent,
+        });
+      }
+
+      await supabase
+        .from("jobs")
+        .update({
+          installation_calendar_uid: calendarUid,
+          installation_calendar_sequence: 0,
+        })
+        .eq("id", newJob.id);
+    }
+  } catch (error) {
+    // Don't fail the whole action if emails fail, but report it.
+    return {
+      ok: true, // The booking was still created
+      jobId: newJob.id,
+      message:
+        "Booking created, but sending confirmation emails failed. Please check the job details and notify the customer manually.",
+    };
+  }
+
+  return {
+    ok: true,
+    message:
+      "Manual booking created and confirmation emails sent. Redirecting...",
+    jobId: newJob.id,
+  };
+}
