@@ -1329,6 +1329,45 @@ export async function resendLastEmailAction(
           return { ok: false, message: "Could not create manage link." };
         const manageLink = createCustomerManageLink(token);
 
+        const { data: assignments } = await supabase
+          .from("job_assignments")
+          .select("user_id")
+          .eq("job_id", jobId)
+          .eq("assignment_type", "inspection");
+
+        const assignedUserIds = (assignments || []).map(
+          (assignment) => assignment.user_id,
+        );
+
+        const { data: teamMembers } = assignedUserIds.length
+          ? await supabase
+              .from("users")
+              .select("email")
+              .in("id", assignedUserIds)
+          : { data: [] };
+
+        const teamEmails =
+          teamMembers?.map((member) => member.email).filter(Boolean) || [];
+
+        const calendarUid =
+          job.inspection_calendar_uid ||
+          `inspection-${jobId}@ecoenergyguard.com`;
+
+        const newSequence = (job.inspection_calendar_sequence || 0) + 1;
+
+        const icsContent = createCalendarInvite({
+          uid: calendarUid,
+          sequence: newSequence,
+          title: `Eco Energy Guard Inspection - ${customerName}`,
+          description: `Home energy inspection for ${customerName}.\n\nManage appointment: ${manageLink}`,
+          location: address,
+          startsAt: slot.starts_at,
+          endsAt: slot.ends_at,
+          organizerEmail: process.env.SMTP_USER || "info@ecoenergyguard.com",
+          attendees: [customer.email, ...teamEmails],
+          method: "REQUEST",
+        });
+
         await sendInspectionApprovedEmail({
           to: customer.email,
           customerName,
@@ -1336,7 +1375,14 @@ export async function resendLastEmailAction(
           endsAt: slot.ends_at,
           address,
           manageLink,
+          icsContent,
         });
+
+        await supabase
+          .from("jobs")
+          .update({ inspection_calendar_sequence: newSequence })
+          .eq("id", jobId);
+
         return { ok: true, message: "Inspection approval email resent." };
       }
 
@@ -1380,13 +1426,59 @@ export async function resendLastEmailAction(
         if (!slot)
           return { ok: false, message: "Installation slot not found." };
 
+        const { data: assignments } = await supabase
+          .from("job_assignments")
+          .select("user_id")
+          .eq("job_id", jobId)
+          .eq("assignment_type", "installation");
+
+        const assignedUserIds = (assignments || []).map(
+          (assignment) => assignment.user_id,
+        );
+
+        const { data: teamMembers } = assignedUserIds.length
+          ? await supabase
+              .from("users")
+              .select("email")
+              .in("id", assignedUserIds)
+          : { data: [] };
+
+        const teamEmails =
+          teamMembers?.map((member) => member.email).filter(Boolean) || [];
+
+        const calendarUid =
+          job.installation_calendar_uid ||
+          `installation-${jobId}@ecoenergyguard.com`;
+
+        const newSequence = (job.installation_calendar_sequence || 0) + 1;
+
+        const icsContent = createCalendarInvite({
+          uid: calendarUid,
+          sequence: newSequence,
+          title: `Eco Energy Guard Installation - ${customerName}`,
+          description: `Installation appointment for ${customerName}.`,
+          location: address,
+          startsAt: slot.starts_at,
+          endsAt: slot.ends_at,
+          organizerEmail: process.env.SMTP_USER || "info@ecoenergyguard.com",
+          attendees: [customer.email, ...teamEmails],
+          method: "REQUEST",
+        });
+
         await sendInstallationScheduledCustomerEmail({
           to: customer.email,
           customerName,
           startsAt: slot.starts_at,
           endsAt: slot.ends_at,
           address,
+          icsContent,
         });
+
+        await supabase
+          .from("jobs")
+          .update({ installation_calendar_sequence: newSequence })
+          .eq("id", jobId);
+
         return { ok: true, message: "Installation confirmation email resent." };
       }
 
