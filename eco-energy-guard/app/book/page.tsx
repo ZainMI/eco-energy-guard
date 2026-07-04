@@ -17,12 +17,18 @@ import {
 import Container from "@/components/layout/Container";
 import { createClient } from "@/lib/supabase/client";
 import AddressAutocomplete from "@/components/forms/AddressAutocomplete";
+import { distanceMiles } from "@/lib/location";
 
 type Slot = {
   id: string;
   starts_at: string;
   ends_at: string;
 };
+
+// Service area constants - adjust as needed
+const SERVICE_CENTER_LAT = 42.6526; // Example: Albany, NY
+const SERVICE_CENTER_LNG = -73.7562;
+const SERVICE_RADIUS_MILES = 50;
 
 export default function BookPage() {
   const supabase = createClient();
@@ -54,6 +60,7 @@ export default function BookPage() {
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState("");
   const [success, setSuccess] = useState(false);
+  const [serviceAreaError, setServiceAreaError] = useState("");
 
   async function loadSlots() {
     setLoadingSlots(true);
@@ -300,34 +307,69 @@ export default function BookPage() {
                 </div>
 
                 <div className="sm:col-span-2">
-                  <AddressAutocomplete
-                    onSelect={(place) => {
-                      setAddress(place.address);
-                      setCity(place.city);
-                      setStateValue(place.state);
-                      setZip(place.zip);
-                      setLatitude(place.latitude);
-                      setLongitude(place.longitude);
-                      setOsmPlaceId(place.osmPlaceId);
-                    }}
-                  />
+                  <label className="text-sm font-semibold">
+                    Property Address
+                  </label>
+                  {!address ? (
+                    <AddressAutocomplete
+                      onSelect={(place) => {
+                        setAddress(place.address);
+                        setCity(place.city);
+                        setStateValue(place.state);
+                        setZip(place.zip);
+                        setLatitude(place.latitude);
+                        setLongitude(place.longitude);
+                        setOsmPlaceId(place.osmPlaceId);
 
-                  {address && (
-                    <div className="mt-3 rounded-2xl bg-secondary p-4 text-sm text-muted-foreground">
-                      <p className="font-semibold text-foreground">
-                        Selected address
-                      </p>
-                      <p className="mt-1">
+                        if (place.latitude && place.longitude) {
+                          const distance = distanceMiles(
+                            SERVICE_CENTER_LAT,
+                            SERVICE_CENTER_LNG,
+                            place.latitude,
+                            place.longitude,
+                          );
+
+                          if (distance > SERVICE_RADIUS_MILES) {
+                            setServiceAreaError(
+                              "Sorry, this address appears outside our current service area. Please contact us directly.",
+                            );
+                          } else {
+                            setServiceAreaError("");
+                          }
+                        }
+                      }}
+                    />
+                  ) : (
+                    <div className="mt-2">
+                      <div className="rounded-2xl bg-secondary p-4 font-medium text-foreground">
                         {[address, city, stateValue, zip]
                           .filter(Boolean)
                           .join(", ")}
-                      </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAddress("");
+                          setServiceAreaError("");
+                        }}
+                        className="mt-2 text-sm font-semibold text-primary transition hover:opacity-80"
+                      >
+                        Change address
+                      </button>
                     </div>
+                  )}
+
+                  {serviceAreaError && (
+                    <p className="mt-2 text-sm font-semibold text-red-600">
+                      {serviceAreaError}
+                    </p>
                   )}
                 </div>
 
                 {/* Calendar Layout Schedule Blocks */}
-                <div className="sm:col-span-2">
+                <div
+                  className={`sm:col-span-2 ${serviceAreaError ? "opacity-50 pointer-events-none" : ""}`}
+                >
                   {loadingSlots ? (
                     <p className="text-sm text-muted-foreground">
                       Loading availability...
@@ -498,7 +540,7 @@ export default function BookPage() {
               <button
                 type="button"
                 onClick={submitRequest}
-                disabled={submitting}
+                disabled={submitting || !!serviceAreaError}
                 className="mt-6 inline-flex h-12 w-full items-center justify-center rounded-full bg-primary px-7 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90 disabled:opacity-50 sm:w-auto"
               >
                 {submitting ? "Submitting..." : "Submit Request"}
