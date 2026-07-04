@@ -1,0 +1,63 @@
+# Vercel Web Analytics Installation Report
+
+## Summary
+Successfully configured Vercel Web Analytics for the eco-energy-guard Next.js project by adding the Analytics component to the root layout.
+
+## Changes Made
+
+### Modified Files:
+- **app/layout.tsx** - Added `<Analytics />` component to the root layout
+
+### What Was Done:
+1. ✅ Fetched latest Vercel Analytics documentation from official quickstart guide
+2. ✅ Verified project structure (Next.js App Router)
+3. ✅ Confirmed `@vercel/analytics` package was already installed (v2.0.1)
+4. ✅ Added `<Analytics />` component to the root layout's body (after Footer component)
+5. ✅ Verified TypeScript compilation with no errors
+6. ✅ Ran linter to ensure no new errors were introduced
+
+## Implementation Details
+
+The Analytics component was already imported in `app/layout.tsx` but was not being rendered in the JSX. Following the official Vercel documentation for Next.js App Router, I added the `<Analytics />` component inside the `<body>` tag, positioned after the Footer component.
+
+**Before:**
+```tsx
+<body>
+  <Navbar />
+  <main>{children}</main>
+  <Footer />
+</body>
+```
+
+**After:**
+```tsx
+<body>
+  <Navbar />
+  <main>{children}</main>
+  <Footer />
+  <Analytics />
+</body>
+```
+
+## Framework-Specific Details
+- **Framework**: Next.js 16.2.10 with App Router
+- **Package Manager**: npm
+- **Analytics Package**: @vercel/analytics v2.0.1
+- **Import**: `import { Analytics } from '@vercel/analytics/next'`
+
+## Testing Performed
+- ✅ TypeScript type checking passed with no errors
+- ✅ Linter ran successfully (no new errors introduced)
+- ⚠️ Full build test skipped due to missing Supabase environment variables (pre-existing issue unrelated to Analytics)
+
+## Next Steps
+Once deployed to Vercel:
+1. Navigate to your Vercel dashboard's Analytics section
+2. Enable Web Analytics if not already enabled
+3. Deploy the changes using `vercel deploy`
+4. Verify Analytics is working by checking the browser Network tab for requests to `/_vercel/insights/view`
+
+## Notes
+- The Analytics component uses a passive approach and will only collect data when the application is deployed on Vercel
+- No additional configuration is required for basic analytics tracking
+- The component is automatically disabled in development mode
