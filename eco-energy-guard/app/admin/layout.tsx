@@ -18,17 +18,17 @@ export default async function AdminLayout({
 
   const { data: profile } = await supabase
     .from("users")
-    .select("role")
+    .select("role, access_status")
     .eq("id", user.id)
     .single();
 
-  if (!profile) {
+  if (!profile || profile.access_status !== "approved") {
     return (
       <section className="min-h-screen bg-stone-50 px-6 py-16">
         <div className="mx-auto max-w-xl rounded-[2rem] border bg-white p-8 text-center shadow-sm">
-          <h1 className="text-3xl font-bold">Access Pending</h1>
+          <h1 className="text-3xl font-bold">Waiting for Access</h1>
           <p className="mt-4 text-muted-foreground">
-            Your Google account is signed in, but it has not been approved for
+            Your account has been created, but it has not been approved for
             admin access yet.
           </p>
           <p className="mt-4 text-sm text-muted-foreground">
@@ -37,6 +37,10 @@ export default async function AdminLayout({
         </div>
       </section>
     );
+  }
+
+  if (!["owner", "employee"].includes(profile.role)) {
+    redirect("/");
   }
 
   return <>{children}</>;

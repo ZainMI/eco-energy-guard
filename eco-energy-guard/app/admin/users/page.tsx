@@ -1,27 +1,23 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ShieldCheck, UserCog } from "lucide-react";
+import { ShieldCheck, UserCog, UserCheck, UserX, Shield } from "lucide-react";
 import Container from "@/components/layout/Container";
 import { createClient } from "@/lib/supabase/client";
 
-type UserRole = "owner" | "admin" | "employee" | "estimator" | "technician";
+type UserRole = "owner" | "employee";
+type AccessStatus = "pending" | "approved" | "revoked";
 
 type AppUser = {
   id: string;
   full_name: string | null;
   email: string | null;
   role: UserRole;
+  access_status: AccessStatus;
   created_at: string;
 };
 
-const roles: UserRole[] = [
-  "owner",
-  "admin",
-  "employee",
-  "estimator",
-  "technician",
-];
+const roles: UserRole[] = ["owner", "employee"];
 
 export default function AdminUsersPage() {
   const supabase = createClient();
@@ -53,7 +49,7 @@ export default function AdminUsersPage() {
 
     const { data, error } = await supabase
       .from("users")
-      .select("id, full_name, email, role, created_at")
+      .select("id, full_name, email, role, access_status, created_at")
       .order("created_at", { ascending: false });
 
     if (!error && data) {
@@ -63,17 +59,25 @@ export default function AdminUsersPage() {
     setLoading(false);
   }
 
-  async function updateRole(userId: string, role: UserRole) {
+  async function updateUser(
+    userId: string,
+    updates: { role?: UserRole; access_status?: AccessStatus },
+  ) {
     setMessage("");
 
-    if (userId === currentUserId && role !== "owner") {
-      setMessage("You cannot remove your own owner access.");
+    if (userId === currentUserId && updates.access_status === "revoked") {
+      setMessage("You cannot revoke your own access.");
+      return;
+    }
+
+    if (userId === currentUserId && updates.role !== "owner") {
+      setMessage("You cannot demote yourself from owner.");
       return;
     }
 
     const { error } = await supabase
       .from("users")
-      .update({ role })
+      .update(updates)
       .eq("id", userId);
 
     if (error) {
@@ -81,7 +85,7 @@ export default function AdminUsersPage() {
       return;
     }
 
-    setMessage("Role updated.");
+    setMessage("User updated successfully.");
     await loadUsers();
   }
 
@@ -114,8 +118,11 @@ export default function AdminUsersPage() {
     );
   }
 
+  const pendingUsers = users.filter((u) => u.access_status === "pending");
+  const approvedUsers = users.filter((u) => u.access_status === "approved");
+
   return (
-    <section className="py-16 sm:py-24">
+    <section className="min-h-screen bg-gradient-to-br from-stone-50 via-amber-50 to-emerald-50 py-10 sm:py-16">
       <Container>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -123,7 +130,7 @@ export default function AdminUsersPage() {
               Admin Users
             </p>
             <h1 className="mt-3 text-4xl font-bold tracking-tight">
-              Manage Team Access
+              Manage Employee Access
             </h1>
             <p className="mt-4 max-w-2xl text-muted-foreground">
               Employees appear here after signing in with Google. The owner can
@@ -144,50 +151,131 @@ export default function AdminUsersPage() {
           </div>
         )}
 
-        <div className="mt-10 grid gap-4">
-          {users.map((user) => (
-            <article
-              key={user.id}
-              className="rounded-3xl border bg-white p-5 shadow-sm"
-            >
-              <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-                <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
-                    <UserCog className="h-6 w-6" />
-                  </div>
-
-                  <div>
-                    <h2 className="text-xl font-bold">
-                      {user.full_name || "Unnamed User"}
-                    </h2>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {user.email}
-                    </p>
-                    <p className="mt-2 text-xs uppercase tracking-wide text-muted-foreground">
-                      Current role:{" "}
-                      <span className="font-bold text-foreground">
-                        {user.role}
-                      </span>
-                    </p>
-                  </div>
-                </div>
-
-                <select
-                  value={user.role}
-                  onChange={(event) =>
-                    updateRole(user.id, event.target.value as UserRole)
-                  }
-                  className="h-11 rounded-xl border bg-background px-4 text-sm font-semibold outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/10"
-                >
-                  {roles.map((role) => (
-                    <option key={role} value={role}>
-                      {role}
-                    </option>
-                  ))}
-                </select>
+        <div className="mt-10 space-y-10">
+          <div className="rounded-[2rem] border bg-white p-4 shadow-sm sm:p-6">
+            <h2 className="border-b pb-4 text-2xl font-bold">
+              Employee Requests
+            </h2>
+            {pendingUsers.length === 0 ? (
+              <p className="py-10 text-center text-sm text-muted-foreground">
+                No pending employee requests.
+              </p>
+            ) : (
+              <div className="mt-6 grid gap-4">
+                {pendingUsers.map((user) => (
+                  <article
+                    key={user.id}
+                    className="rounded-3xl border bg-stone-50 p-5"
+                  >
+                    <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                      <div className="flex items-start gap-4">
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
+                          <UserCog className="h-6 w-6" />
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-bold">
+                            {user.full_name || "Unnamed User"}
+                          </h3>
+                          <p className="mt-1 text-sm text-muted-foreground">
+                            {user.email}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-2 sm:flex-row">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            updateUser(user.id, {
+                              access_status: "approved",
+                              role: "employee",
+                            })
+                          }
+                          className="inline-flex h-11 cursor-pointer items-center justify-center rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground transition hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-md active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          <UserCheck className="mr-2 h-4 w-4" />
+                          Approve
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            updateUser(user.id, { access_status: "revoked" })
+                          }
+                          className="inline-flex h-11 cursor-pointer items-center justify-center rounded-full bg-red-50 px-6 text-sm font-semibold text-red-600 transition hover:-translate-y-0.5 hover:bg-red-100 hover:shadow-md active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          <UserX className="mr-2 h-4 w-4" />
+                          Deny
+                        </button>
+                      </div>
+                    </div>
+                  </article>
+                ))}
               </div>
-            </article>
-          ))}
+            )}
+          </div>
+
+          <div className="rounded-[2rem] border bg-white p-4 shadow-sm sm:p-6">
+            <h2 className="border-b pb-4 text-2xl font-bold">
+              Approved Employees
+            </h2>
+            {approvedUsers.length === 0 ? (
+              <p className="py-10 text-center text-sm text-muted-foreground">
+                No approved employees.
+              </p>
+            ) : (
+              <div className="mt-6 grid gap-4">
+                {approvedUsers.map((user) => (
+                  <article
+                    key={user.id}
+                    className="rounded-3xl border bg-stone-50 p-5"
+                  >
+                    <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                      <div className="flex items-start gap-4">
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
+                          <UserCog className="h-6 w-6" />
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-bold">
+                            {user.full_name || "Unnamed User"}
+                          </h3>
+                          <p className="mt-1 text-sm text-muted-foreground">
+                            {user.email}
+                          </p>
+                          <p className="mt-2 text-xs font-bold uppercase tracking-wide text-primary">
+                            {user.role}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-2 sm:flex-row">
+                        {user.role !== "owner" && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              updateUser(user.id, { role: "owner" })
+                            }
+                            className="inline-flex h-11 cursor-pointer items-center justify-center rounded-full border bg-white px-6 text-sm font-semibold transition hover:-translate-y-0.5 hover:bg-muted hover:shadow-md active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            <Shield className="mr-2 h-4 w-4" />
+                            Make Owner
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            updateUser(user.id, { access_status: "revoked" })
+                          }
+                          disabled={user.id === currentUserId}
+                          className="inline-flex h-11 cursor-pointer items-center justify-center rounded-full bg-red-50 px-6 text-sm font-semibold text-red-600 transition hover:-translate-y-0.5 hover:bg-red-100 hover:shadow-md active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          <UserX className="mr-2 h-4 w-4" />
+                          Revoke
+                        </button>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </Container>
     </section>
