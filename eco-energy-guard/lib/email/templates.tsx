@@ -1,3 +1,5 @@
+import { formatDateTimeRange } from "@/lib/date";
+
 export function inspectionApprovedHtml({
   customerName,
   startsAt,
@@ -11,9 +13,6 @@ export function inspectionApprovedHtml({
   address: string;
   manageLink: string;
 }) {
-  const start = new Date(startsAt);
-  const end = new Date(endsAt);
-
   return `
     <div style="font-family: Arial, sans-serif; max-width: 640px; margin: 0 auto; color: #222;">
       <h1>Your inspection is confirmed</h1>
@@ -21,14 +20,7 @@ export function inspectionApprovedHtml({
       <p>Your Eco Energy Guard home energy inspection has been approved and scheduled.</p>
 
       <div style="background:#f6f3ea; border-radius:16px; padding:20px; margin:24px 0;">
-        <p><strong>Date:</strong> ${start.toLocaleDateString()}</p>
-        <p><strong>Time:</strong> ${start.toLocaleTimeString([], {
-          hour: "numeric",
-          minute: "2-digit",
-        })} – ${end.toLocaleTimeString([], {
-          hour: "numeric",
-          minute: "2-digit",
-        })}</p>
+        <p><strong>Time:</strong> ${formatDateTimeRange(startsAt, endsAt)}</p>
         <p><strong>Address:</strong> ${address}</p>
       </div>
 
@@ -67,9 +59,6 @@ export function inspectionAssignedHtml({
   issueNotes?: string | null;
   jobLink: string;
 }) {
-  const start = new Date(startsAt);
-  const end = new Date(endsAt);
-
   return `
     <div style="font-family: Arial, sans-serif; max-width: 640px; margin: 0 auto; color: #222;">
       <h1>You’ve been assigned an inspection</h1>
@@ -78,14 +67,7 @@ export function inspectionAssignedHtml({
 
       <div style="background:#f6f3ea; border-radius:16px; padding:20px; margin:24px 0;">
         <p><strong>Customer:</strong> ${customerName}</p>
-        <p><strong>Date:</strong> ${start.toLocaleDateString()}</p>
-        <p><strong>Time:</strong> ${start.toLocaleTimeString([], {
-          hour: "numeric",
-          minute: "2-digit",
-        })} – ${end.toLocaleTimeString([], {
-          hour: "numeric",
-          minute: "2-digit",
-        })}</p>
+        <p><strong>Time:</strong> ${formatDateTimeRange(startsAt, endsAt)}</p>
         <p><strong>Address:</strong> ${address}</p>
         <p><strong>Email:</strong> ${customerEmail}</p>
         <p><strong>Phone:</strong> ${customerPhone || "Not provided"}</p>
@@ -262,26 +244,14 @@ type ScheduleDay = {
 
 function scheduleHtml(days: ScheduleDay[]) {
   return days
-    .map((day) => {
-      const start = new Date(day.starts_at);
-      const end = new Date(day.ends_at);
-
-      return `
+    .map(
+      (day) => `
         <p>
           <strong>Day ${day.day_number}:</strong>
-          ${start.toLocaleDateString()}
-          ${start.toLocaleTimeString([], {
-            hour: "numeric",
-            minute: "2-digit",
-          })}
-          –
-          ${end.toLocaleTimeString([], {
-            hour: "numeric",
-            minute: "2-digit",
-          })}
+          ${formatDateTimeRange(day.starts_at, day.ends_at)}
         </p>
-      `;
-    })
+      `,
+    )
     .join("");
 }
 
