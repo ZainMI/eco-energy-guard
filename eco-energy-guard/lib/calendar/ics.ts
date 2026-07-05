@@ -62,3 +62,72 @@ export function createCalendarInvite(input: CalendarInviteInput) {
     .filter(Boolean)
     .join("\n");
 }
+
+export type CalendarScheduleDay = {
+  starts_at: string;
+  ends_at: string;
+};
+
+export function createMultiDayCalendarInvite({
+  uid,
+  sequence,
+  title,
+  description,
+  location,
+  organizerEmail,
+  attendees,
+  days,
+  method = "REQUEST",
+}: {
+  uid: string;
+  sequence: number;
+  title: string;
+  description: string;
+  location: string;
+  organizerEmail: string;
+  attendees: string[];
+  days: CalendarScheduleDay[];
+  method?: "REQUEST" | "CANCEL";
+}) {
+  const attendeesText = attendees
+    .filter(Boolean)
+    .map((email) => `ATTENDEE;RSVP=TRUE:mailto:${email}`)
+    .join("\n");
+
+  const events = days.map((day, index) =>
+    [
+      "BEGIN:VEVENT",
+      `UID:${uid}-day-${index + 1}`,
+      `SEQUENCE:${sequence}`,
+      `DTSTAMP:${formatDate(new Date().toISOString())}`,
+      `DTSTART:${formatDate(day.starts_at)}`,
+      `DTEND:${formatDate(day.ends_at)}`,
+      `SUMMARY:${escapeText(`${title} - Day ${index + 1}`)}`,
+      `DESCRIPTION:${escapeText(description)}`,
+      `LOCATION:${escapeText(location)}`,
+      `ORGANIZER:mailto:${organizerEmail}`,
+      method === "CANCEL" ? "STATUS:CANCELLED" : "",
+      attendeesText,
+      method === "REQUEST" ? "BEGIN:VALARM" : "",
+      method === "REQUEST" ? "TRIGGER:-PT24H" : "",
+      method === "REQUEST" ? "ACTION:DISPLAY" : "",
+      method === "REQUEST"
+        ? "DESCRIPTION:Eco Energy Guard installation reminder"
+        : "",
+      method === "REQUEST" ? "END:VALARM" : "",
+      "END:VEVENT",
+    ]
+      .filter(Boolean)
+      .join("\n"),
+  );
+
+  return [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//Eco Energy Guard//Scheduling//EN",
+    "CALSCALE:GREGORIAN",
+    `METHOD:${method}`,
+    ...events,
+    "END:VCALENDAR",
+  ].join("\n");
+}

@@ -17,6 +17,13 @@ type TeamMember = {
   role: string;
 };
 
+type ScheduleDayRow = {
+  date: string;
+  startTime: string;
+  endTime: string;
+  notes: string;
+};
+
 // Service area constants for warning - adjust as needed
 const SERVICE_CENTER_LAT = 42.6526; // Example: Albany, NY
 const SERVICE_CENTER_LNG = -73.7562;
@@ -27,7 +34,7 @@ export default function ManualBookingPage() {
   const supabase = createClient();
 
   const [team, setTeam] = useState<TeamMember[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState("");
   const [serviceAreaWarning, setServiceAreaWarning] = useState("");
@@ -47,14 +54,13 @@ export default function ManualBookingPage() {
   const [latitude, setLatitude] = useState<number | null>(null);
   const [longitude, setLongitude] = useState<number | null>(null);
   const [osmPlaceId, setOsmPlaceId] = useState("");
-  const [date, setDate] = useState("");
-  const [startTime, setStartTime] = useState("");
-  const [endTime, setEndTime] = useState("");
-  const [notes, setNotes] = useState("");
   const [manualEstimateAmount, setManualEstimateAmount] = useState<
     number | null
   >(null);
   const [teamIds, setTeamIds] = useState<string[]>([]);
+  const [scheduleDays, setScheduleDays] = useState<ScheduleDayRow[]>([
+    { date: "", startTime: "09:00", endTime: "13:00", notes: "" },
+  ]);
 
   useEffect(() => {
     async function loadTeam() {
@@ -87,10 +93,7 @@ export default function ManualBookingPage() {
       latitude,
       longitude,
       osmPlaceId,
-      date,
-      startTime,
-      endTime,
-      notes,
+      scheduleDays,
       manualEstimateAmount,
       teamIds,
     });
@@ -139,7 +142,12 @@ export default function ManualBookingPage() {
                 <div className="mt-2 grid grid-cols-2 gap-2 rounded-xl bg-stone-100 p-1">
                   <button
                     type="button"
-                    onClick={() => setBookingType("inspection")}
+                    onClick={() => {
+                      setBookingType("inspection");
+                      if (scheduleDays.length > 1) {
+                        setScheduleDays([scheduleDays[0]]);
+                      }
+                    }}
                     className={`flex cursor-pointer items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold transition ${
                       bookingType === "inspection"
                         ? "bg-white shadow-sm"
@@ -260,35 +268,114 @@ export default function ManualBookingPage() {
                 )}
               </div>
 
-              <div className="grid gap-5 sm:grid-cols-3">
-                <div>
-                  <label className="text-sm font-semibold">Date</label>
-                  <input
-                    type="date"
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    className="mt-2 h-12 w-full rounded-xl border bg-background px-4 outline-none focus:border-primary focus:ring-4 focus:ring-primary/10"
-                  />
+              {scheduleDays.map((day, index) => (
+                <div key={index} className="rounded-2xl border bg-stone-50 p-4">
+                  <div className="flex items-center justify-between">
+                    <p className="font-semibold">
+                      {bookingType === "installation"
+                        ? `Day ${index + 1}`
+                        : "Date & Time"}
+                    </p>
+                    {bookingType === "installation" && index > 0 && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setScheduleDays(
+                            scheduleDays.filter((_, i) => i !== index),
+                          )
+                        }
+                        className="text-xs font-semibold text-red-500 hover:text-red-700"
+                      >
+                        Remove Day
+                      </button>
+                    )}
+                  </div>
+                  <div className="mt-4 grid gap-5 sm:grid-cols-3">
+                    <div>
+                      <label className="text-sm font-semibold">Date</label>
+                      <input
+                        type="date"
+                        value={day.date}
+                        onChange={(e) => {
+                          const newDays = [...scheduleDays];
+                          newDays[index].date = e.target.value;
+                          setScheduleDays(newDays);
+                        }}
+                        className="mt-2 h-12 w-full rounded-xl border bg-background px-4 outline-none focus:border-primary focus:ring-4 focus:ring-primary/10"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-semibold">
+                        Start Time
+                      </label>
+                      <input
+                        type="time"
+                        value={day.startTime}
+                        onChange={(e) => {
+                          const newDays = [...scheduleDays];
+                          newDays[index].startTime = e.target.value;
+                          setScheduleDays(newDays);
+                        }}
+                        className="mt-2 h-12 w-full rounded-xl border bg-background px-4 outline-none focus:border-primary focus:ring-4 focus:ring-primary/10"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-semibold">End Time</label>
+                      <input
+                        type="time"
+                        value={day.endTime}
+                        onChange={(e) => {
+                          const newDays = [...scheduleDays];
+                          newDays[index].endTime = e.target.value;
+                          setScheduleDays(newDays);
+                        }}
+                        className="mt-2 h-12 w-full rounded-xl border bg-background px-4 outline-none focus:border-primary focus:ring-4 focus:ring-primary/10"
+                      />
+                    </div>
+                  </div>
+                  <div className="mt-4">
+                    <label className="text-sm font-semibold">
+                      {bookingType === "inspection"
+                        ? "Customer Issue Notes"
+                        : "Notes for this day (optional)"}
+                    </label>
+                    <textarea
+                      value={day.notes}
+                      onChange={(e) => {
+                        const newDays = [...scheduleDays];
+                        newDays[index].notes = e.target.value;
+                        setScheduleDays(newDays);
+                      }}
+                      className="mt-2 min-h-20 w-full rounded-xl border bg-background px-4 py-3 outline-none focus:border-primary focus:ring-4 focus:ring-primary/10"
+                      placeholder={
+                        bookingType === "inspection"
+                          ? "Notes from the customer..."
+                          : "e.g., Morning crew only"
+                      }
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="text-sm font-semibold">Start Time</label>
-                  <input
-                    type="time"
-                    value={startTime}
-                    onChange={(e) => setStartTime(e.target.value)}
-                    className="mt-2 h-12 w-full rounded-xl border bg-background px-4 outline-none focus:border-primary focus:ring-4 focus:ring-primary/10"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-semibold">End Time</label>
-                  <input
-                    type="time"
-                    value={endTime}
-                    onChange={(e) => setEndTime(e.target.value)}
-                    className="mt-2 h-12 w-full rounded-xl border bg-background px-4 outline-none focus:border-primary focus:ring-4 focus:ring-primary/10"
-                  />
-                </div>
-              </div>
+              ))}
+
+              {bookingType === "installation" && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setScheduleDays([
+                      ...scheduleDays,
+                      {
+                        date: "",
+                        startTime: "09:00",
+                        endTime: "13:00",
+                        notes: "",
+                      },
+                    ])
+                  }
+                  className="inline-flex h-11 items-center justify-center rounded-full border bg-white px-6 text-sm font-semibold transition hover:bg-muted"
+                >
+                  <Plus className="mr-2 h-4 w-4" /> Add Installation Day
+                </button>
+              )}
 
               {bookingType === "installation" && (
                 <div>
@@ -310,21 +397,12 @@ export default function ManualBookingPage() {
               )}
 
               <div>
-                <label className="text-sm font-semibold">
-                  {bookingType === "inspection"
-                    ? "Customer Issue Notes"
-                    : "Customer-Facing Notes"}
-                </label>
-                <textarea
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  className="mt-2 min-h-28 w-full rounded-xl border bg-background px-4 py-3 outline-none focus:border-primary focus:ring-4 focus:ring-primary/10"
-                  placeholder="Notes from the customer..."
-                />
-              </div>
-
-              <div>
                 <label className="text-sm font-semibold">Assign Team</label>
+                {bookingType === "installation" && (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    This team will be assigned to all installation days.
+                  </p>
+                )}
                 {loading ? (
                   <p className="mt-2 text-sm text-muted-foreground">
                     Loading team...

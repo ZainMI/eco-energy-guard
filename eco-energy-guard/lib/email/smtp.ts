@@ -2,8 +2,9 @@ import nodemailer from "nodemailer";
 import {
   estimateReadyHtml,
   inspectionApprovedHtml,
+  installationProposalAcceptedWorkerHtml,
+  installationProposalChangesRequestedWorkerHtml,
   installationAssignedWorkerHtml,
-  installationRequestedWorkerHtml,
   inspectionAssignedHtml,
   inspectionCancelledCustomerHtml,
   inspectionCancelledWorkerHtml,
@@ -69,7 +70,13 @@ export async function sendInspectionApprovedEmail({
   };
 }
 
-export async function sendInstallationRequestedWorkerEmail({
+type ScheduleDay = {
+  day_number: number;
+  starts_at: string;
+  ends_at: string;
+};
+
+export async function sendInstallationProposalAcceptedWorkerEmail({
   to,
   workerName,
   customerName,
@@ -81,10 +88,38 @@ export async function sendInstallationRequestedWorkerEmail({
   const result = await transporter.sendMail({
     from,
     to,
-    subject: `Installation requested: ${customerName}`,
-    html: installationRequestedWorkerHtml({
+    subject: `Installation schedule accepted: ${customerName}`,
+    html: installationProposalAcceptedWorkerHtml({
       workerName,
       customerName,
+    }),
+  });
+
+  return {
+    accepted: result.accepted.map(String),
+    id: result.messageId,
+  };
+}
+
+export async function sendInstallationProposalChangesRequestedWorkerEmail({
+  to,
+  workerName,
+  customerName,
+  message,
+}: {
+  to: string;
+  workerName: string;
+  customerName: string;
+  message: string;
+}) {
+  const result = await transporter.sendMail({
+    from,
+    to,
+    subject: `Installation schedule changes requested: ${customerName}`,
+    html: installationProposalChangesRequestedWorkerHtml({
+      workerName,
+      customerName,
+      message,
     }),
   });
 
@@ -97,15 +132,13 @@ export async function sendInstallationRequestedWorkerEmail({
 export async function sendInstallationScheduledCustomerEmail({
   to,
   customerName,
-  startsAt,
-  endsAt,
+  scheduleDays,
   address,
   icsContent,
 }: {
   to: string;
   customerName: string;
-  startsAt: string;
-  endsAt: string;
+  scheduleDays: ScheduleDay[];
   address: string;
   icsContent: string;
 }) {
@@ -115,8 +148,7 @@ export async function sendInstallationScheduledCustomerEmail({
     subject: "Your Eco Energy Guard installation is scheduled",
     html: installationScheduledCustomerHtml({
       customerName,
-      startsAt,
-      endsAt,
+      scheduleDays,
       address,
     }),
     attachments: [
@@ -140,8 +172,7 @@ export async function sendInstallationAssignedWorkerEmail({
   customerName,
   customerEmail,
   customerPhone,
-  startsAt,
-  endsAt,
+  scheduleDays,
   address,
   jobLink,
   icsContent,
@@ -151,8 +182,7 @@ export async function sendInstallationAssignedWorkerEmail({
   customerName: string;
   customerEmail: string;
   customerPhone?: string | null;
-  startsAt: string;
-  endsAt: string;
+  scheduleDays: ScheduleDay[];
   address: string;
   jobLink: string;
   icsContent: string;
@@ -166,8 +196,7 @@ export async function sendInstallationAssignedWorkerEmail({
       customerName,
       customerEmail,
       customerPhone,
-      startsAt,
-      endsAt,
+      scheduleDays,
       address,
       jobLink,
     }),

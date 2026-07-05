@@ -1,6 +1,9 @@
 "use server";
 
-import { createCalendarInvite } from "@/lib/calendar/ics";
+import {
+  createCalendarInvite,
+  createMultiDayCalendarInvite,
+} from "@/lib/calendar/ics";
 import { createCustomerManageLink } from "@/lib/customer/links";
 import {
   sendEstimateReadyEmail,
@@ -9,8 +12,9 @@ import {
   sendInspectionCancelledCustomerEmail,
   sendInspectionCancelledWorkerEmail,
   sendInspectionDeniedEmail,
+  sendInstallationProposalAcceptedWorkerEmail,
+  sendInstallationProposalChangesRequestedWorkerEmail,
   sendInstallationAssignedWorkerEmail,
-  sendInstallationRequestedWorkerEmail,
   sendInstallationScheduledCustomerEmail,
   sendInspectionRescheduleEmail,
   sendInspectionRescheduleWorkerEmail,
@@ -575,6 +579,19 @@ export async function sendEstimateAction(jobId: string): Promise<ActionResult> {
 
   if (!customer) return { ok: false, message: "Customer not found." };
 
+  const { data: proposals } = await supabase
+    .from("installation_proposals")
+    .select("id")
+    .eq("job_id", jobId)
+    .eq("status", "proposed");
+
+  if (!proposals?.length) {
+    return {
+      ok: false,
+      message:
+        "Please add an installation proposal before sending the estimate.",
+    };
+  }
   const token = await createManageToken(jobId);
 
   if (!token) {
@@ -610,27 +627,6 @@ export async function sendEstimateAction(jobId: string): Promise<ActionResult> {
     );
   }
   try {
-    const { data: inspectionAssignments } = await supabase
-      .from("job_assignments")
-      .select("user_id")
-      .eq("job_id", jobId)
-      .eq("assignment_type", "inspection");
-
-    await supabase
-      .from("job_assignments")
-      .delete()
-      .eq("job_id", jobId)
-      .eq("assignment_type", "installation");
-
-    if (inspectionAssignments?.length) {
-      await supabase.from("job_assignments").insert(
-        inspectionAssignments.map((assignment) => ({
-          job_id: jobId,
-          user_id: assignment.user_id,
-          assignment_type: "installation",
-        })),
-      );
-    }
     const emailResult = await sendEstimateReadyEmail({
       to: customer.email,
       customerName,
@@ -665,56 +661,147 @@ export async function sendEstimateAction(jobId: string): Promise<ActionResult> {
   };
 }
 
-export async function requestInstallationAction(
+export async function acceptInstallationProposalAction(
   token: string,
-  slotId: string,
 ): Promise<ActionResult> {
   const supabase = await createClient();
 
-  const { data, error } = await supabase.rpc(
-    "schedule_installation_managed_job_with_notifications",
+  const { data: beforeData } = await supabase.rpc(
+    "get_installation_proposal_job",
     {
       p_token: token,
-      p_slot_id: slotId,
+    },
+  );
+
+  if (!beforeData?.ok) {
+    return {
+      ok: false,
+      message: beforeData?.message || "Invalid installation link.",
+    };
+  }
+
+  const job = beforeData.job;
+  const customer = beforeData.customer;
+  const customerName = `${customer.first_name} ${customer.last_name}`;
+
+  const { data, error } = await supabase.rpc("accept_installation_proposal", {
+    p_token: token,
+  });
+
+  if (error || !data?.ok) {
+    return {
+      ok: false,
+      message: error?.message || data?.message || "Unable to accept schedule.",
+    };
+  }
+
+  const { data: assignments } = await supabase
+    .from("job_assignments")
+    .select("user_id")
+    .eq("job_id", job.id)
+    .eq("assignment_type", "installation");
+
+  const assignedUserIds = (assignments || []).map((item) => item.user_id);
+
+  if (assignedUserIds.length) {
+    const { data: users } = await supabase
+      .from("users")
+      .select("email, full_name")
+      .in("id", assignedUserIds);
+
+    for (const user of users || []) {
+      if (!user.email) continue;
+
+      await sendInstallationProposalAcceptedWorkerEmail({
+        to: user.email,
+        workerName: user.full_name || user.email,
+        customerName,
+      });
+    }
+  }
+
+  return {
+    ok: true,
+    message:
+      "Installation schedule accepted. Eco Energy Guard will review and confirm it.",
+  };
+}
+
+export async function requestInstallationProposalChangesAction(
+  token: string,
+  message: string,
+): Promise<ActionResult> {
+  const supabase = await createClient();
+
+  if (!message.trim()) {
+    return {
+      ok: false,
+      message: "Please describe what needs to change.",
+    };
+  }
+
+  const { data: beforeData } = await supabase.rpc(
+    "get_installation_proposal_job",
+    {
+      p_token: token,
+    },
+  );
+
+  if (!beforeData?.ok) {
+    return {
+      ok: false,
+      message: beforeData?.message || "Invalid installation link.",
+    };
+  }
+
+  const job = beforeData.job;
+  const customer = beforeData.customer;
+  const customerName = `${customer.first_name} ${customer.last_name}`;
+  console.log("here");
+
+  const { data, error } = await supabase.rpc(
+    "request_installation_proposal_changes",
+    {
+      p_token: token,
+      p_message: message,
     },
   );
 
   if (error || !data?.ok) {
     return {
       ok: false,
-      message:
-        error?.message || data?.message || "Unable to request installation.",
+      message: error?.message || data?.message || "Unable to request changes.",
     };
   }
 
-  const customer = data.customer;
-  const team = data.team || [];
-  const customerName = `${customer.first_name} ${customer.last_name}`;
+  const { data: assignments } = await supabase
+    .from("job_assignments")
+    .select("user_id")
+    .eq("job_id", job.id);
 
-  try {
-    for (const member of team) {
-      if (!member.email) continue;
+  const assignedUserIds = (assignments || []).map((item) => item.user_id);
 
-      await sendInstallationRequestedWorkerEmail({
-        to: member.email,
-        workerName: member.full_name || member.email,
+  if (assignedUserIds.length) {
+    const { data: users } = await supabase
+      .from("users")
+      .select("email, full_name")
+      .in("id", assignedUserIds);
+
+    for (const user of users || []) {
+      if (!user.email) continue;
+
+      await sendInstallationProposalChangesRequestedWorkerEmail({
+        to: user.email,
+        workerName: user.full_name || user.email,
         customerName,
+        message,
       });
     }
-  } catch (error) {
-    return {
-      ok: false,
-      message:
-        error instanceof Error
-          ? error.message
-          : "Installation request saved, but team email failed.",
-    };
   }
 
   return {
     ok: true,
-    message:
-      "Installation time requested. Eco Energy Guard will review and confirm it.",
+    message: "Change request sent to Eco Energy Guard.",
   };
 }
 
@@ -728,13 +815,7 @@ export async function approveInstallationAction(
 
   const { data: job } = await supabase
     .from("jobs")
-    .select(
-      `
-      *,
-      customers (*),
-      slots:installation_slot_id (*)
-    `,
-    )
+    .select("*, customers(*)")
     .eq("id", jobId)
     .single();
 
@@ -744,10 +825,21 @@ export async function approveInstallationAction(
     ? job.customers[0]
     : job.customers;
 
-  const slot = Array.isArray(job.slots) ? job.slots[0] : job.slots;
-
   if (!customer) return { ok: false, message: "Customer not found." };
-  if (!slot) return { ok: false, message: "Installation slot not found." };
+
+  const { data: scheduleDays } = await supabase
+    .from("installation_proposals")
+    .select("day_number, starts_at, ends_at")
+    .eq("job_id", jobId)
+    .eq("status", "accepted")
+    .order("day_number", { ascending: true });
+
+  if (!scheduleDays?.length) {
+    return {
+      ok: false,
+      message: "No accepted installation schedule found.",
+    };
+  }
 
   const { data: assignments } = await supabase
     .from("job_assignments")
@@ -787,16 +879,15 @@ export async function approveInstallationAction(
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
   const jobLink = `${siteUrl}/admin/jobs/${jobId}`;
 
-  const icsContent = createCalendarInvite({
+  const icsContent = createMultiDayCalendarInvite({
     uid: calendarUid,
     sequence: calendarSequence,
     title: `Eco Energy Guard Installation - ${customerName}`,
     description: `Installation appointment for ${customerName}.`,
     location: address,
-    startsAt: slot.starts_at,
-    endsAt: slot.ends_at,
     organizerEmail: process.env.SMTP_USER || "info@ecoenergyguard.com",
     attendees: [customer.email, ...teamEmails],
+    days: scheduleDays,
     method: "REQUEST",
   });
 
@@ -804,8 +895,7 @@ export async function approveInstallationAction(
     await sendInstallationScheduledCustomerEmail({
       to: customer.email,
       customerName,
-      startsAt: slot.starts_at,
-      endsAt: slot.ends_at,
+      scheduleDays,
       address,
       icsContent,
     });
@@ -819,8 +909,7 @@ export async function approveInstallationAction(
         customerName,
         customerEmail: customer.email,
         customerPhone: customer.phone,
-        startsAt: slot.starts_at,
-        endsAt: slot.ends_at,
+        scheduleDays,
         address,
         jobLink,
         icsContent,
@@ -849,120 +938,6 @@ export async function approveInstallationAction(
   return {
     ok: true,
     message: "Installation approved and confirmation emails sent.",
-  };
-}
-
-export async function scheduleInstallationManagedJobAction(
-  token: string,
-  slotId: string,
-): Promise<ActionResult> {
-  const supabase = await createClient();
-
-  const { data, error } = await supabase.rpc(
-    "schedule_installation_managed_job_with_notifications",
-    {
-      p_token: token,
-      p_slot_id: slotId,
-    },
-  );
-
-  if (error || !data?.ok) {
-    return {
-      ok: false,
-      message:
-        error?.message || data?.message || "Unable to schedule installation.",
-    };
-  }
-
-  const job = data.job;
-  const customer = data.customer;
-  const slot = data.slot;
-  const team = data.team || [];
-
-  const customerName = `${customer.first_name} ${customer.last_name}`;
-  const address = [
-    customer.address,
-    customer.city,
-    customer.state,
-    customer.zip,
-  ]
-    .filter(Boolean)
-    .join(", ");
-
-  const teamEmails = team
-    .map((member: { email?: string }) => member.email)
-    .filter(Boolean);
-
-  const calendarUid =
-    job.installation_calendar_uid ||
-    `installation-${job.id}@ecoenergyguard.com`;
-
-  const calendarSequence = job.installation_calendar_uid
-    ? (job.installation_calendar_sequence || 0) + 1
-    : 0;
-
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-  const jobLink = `${siteUrl}/admin/jobs/${job.id}`;
-
-  const icsContent = createCalendarInvite({
-    uid: calendarUid,
-    sequence: calendarSequence,
-    title: `Eco Energy Guard Installation - ${customerName}`,
-    description: `Installation appointment for ${customerName}.`,
-    location: address,
-    startsAt: slot.starts_at,
-    endsAt: slot.ends_at,
-    organizerEmail: process.env.SMTP_USER || "info@ecoenergyguard.com",
-    attendees: [customer.email, ...teamEmails],
-    method: "REQUEST",
-  });
-
-  await supabase
-    .from("jobs")
-    .update({
-      installation_calendar_uid: calendarUid,
-      installation_calendar_sequence: calendarSequence,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", job.id);
-
-  try {
-    await sendInstallationScheduledCustomerEmail({
-      to: customer.email,
-      customerName,
-      startsAt: slot.starts_at,
-      endsAt: slot.ends_at,
-      address,
-      icsContent,
-    });
-
-    for (const member of team) {
-      if (!member.email) continue;
-
-      await sendInstallationAssignedWorkerEmail({
-        to: member.email,
-        workerName: member.full_name || member.email,
-        customerName,
-        customerEmail: customer.email,
-        customerPhone: customer.phone,
-        startsAt: slot.starts_at,
-        endsAt: slot.ends_at,
-        address,
-        jobLink,
-        icsContent,
-      });
-    }
-  } catch (error) {
-    return {
-      ok: false,
-      message:
-        error instanceof Error ? error.message : "Installation email failed.",
-    };
-  }
-
-  return {
-    ok: true,
-    message: "Installation scheduled and confirmation emails sent.",
   };
 }
 
@@ -1013,13 +988,14 @@ export async function createManualBookingAction(
     latitude,
     longitude,
     osmPlaceId,
-    date,
-    startTime,
-    endTime,
-    notes,
+    scheduleDays,
     manualEstimateAmount,
     teamIds,
   } = formData;
+
+  if (teamIds.length === 0) {
+    return { ok: false, message: "Please assign at least one team member." };
+  }
 
   // Validation
   if (
@@ -1028,17 +1004,19 @@ export async function createManualBookingAction(
     !lastName ||
     !email ||
     !address ||
-    !date ||
-    !startTime ||
-    !endTime
+    !scheduleDays ||
+    scheduleDays.length === 0
   ) {
     return { ok: false, message: "Please fill out all required fields." };
   }
-  if (teamIds.length === 0) {
-    return { ok: false, message: "Please assign at least one team member." };
-  }
-  if (startTime >= endTime) {
-    return { ok: false, message: "End time must be after start time." };
+
+  for (const day of scheduleDays) {
+    if (!day.date || !day.startTime || !day.endTime) {
+      return { ok: false, message: "Please fill out all required fields." };
+    }
+    if (day.startTime >= day.endTime) {
+      return { ok: false, message: "End time must be after start time." };
+    }
   }
 
   const supabase = await createClient();
@@ -1081,43 +1059,21 @@ export async function createManualBookingAction(
     customerId = newCustomer.id;
   }
 
-  // 2. Create a one-off, unavailable slot
-  const starts_at = new Date(`${date}T${startTime}`).toISOString();
-  const ends_at = new Date(`${date}T${endTime}`).toISOString();
-
-  const { data: newSlot, error: slotError } = await supabase
-    .from("slots")
-    .insert({
-      type: bookingType,
-      starts_at,
-      ends_at,
-      is_available: false,
-      notes: "Manual booking",
-    })
-    .select("id")
-    .single();
-
-  if (slotError || !newSlot) {
-    return {
-      ok: false,
-      message: slotError?.message || "Could not create time slot.",
-    };
-  }
-
   // 3. Create the job
   const jobPayload: any = {
     customer_id: customerId,
     status:
-      bookingType === "inspection"
-        ? "inspection_scheduled"
-        : "installation_scheduled",
+      bookingType === "inspection" ? "inspection_scheduled" : "estimate_sent", // Start at estimate_sent for manual installation
   };
   if (bookingType === "inspection") {
-    jobPayload.inspection_slot_id = newSlot.id;
-    jobPayload.issue_notes = notes;
+    // For inspection, there's only one day
+    jobPayload.issue_notes = scheduleDays[0].notes;
   } else {
-    jobPayload.installation_slot_id = newSlot.id;
-    jobPayload.customer_notes = notes;
+    // For installation, combine notes if needed or handle differently
+    jobPayload.customer_notes = scheduleDays
+      .map((d: any) => d.notes)
+      .filter(Boolean)
+      .join("\n");
     jobPayload.manual_estimate_amount = manualEstimateAmount || null;
   }
 
@@ -1129,6 +1085,56 @@ export async function createManualBookingAction(
 
   if (jobError || !newJob) {
     return { ok: false, message: jobError?.message || "Could not create job." };
+  }
+
+  // 2. Create slots and proposals
+  if (bookingType === "inspection") {
+    const day = scheduleDays[0];
+    const starts_at = new Date(`${day.date}T${day.startTime}`).toISOString();
+    const ends_at = new Date(`${day.date}T${day.endTime}`).toISOString();
+
+    const { data: newSlot, error: slotError } = await supabase
+      .from("slots")
+      .insert({
+        type: "inspection",
+        starts_at,
+        ends_at,
+        is_available: false,
+        notes: "Manual booking",
+      })
+      .select("id")
+      .single();
+
+    if (slotError || !newSlot) {
+      // Attempt to clean up created job
+      await supabase.from("jobs").delete().eq("id", newJob.id);
+      return {
+        ok: false,
+        message: slotError?.message || "Could not create time slot.",
+      };
+    }
+
+    await supabase
+      .from("jobs")
+      .update({ inspection_slot_id: newSlot.id })
+      .eq("id", newJob.id);
+  } else {
+    // Installation
+    const proposalPayload = scheduleDays.map((day: any, index: number) => ({
+      job_id: newJob.id,
+      day_number: index + 1,
+      starts_at: new Date(`${day.date}T${day.startTime}`).toISOString(),
+      ends_at: new Date(`${day.date}T${day.endTime}`).toISOString(),
+      notes: day.notes || null,
+      status: "accepted", // Manually booked is auto-accepted
+    }));
+
+    await supabase.from("installation_proposals").insert(proposalPayload);
+
+    await supabase
+      .from("jobs")
+      .update({ status: "installation_requested" }) // Set to a state where it can be approved
+      .eq("id", newJob.id);
   }
 
   // 4. Create job assignments
@@ -1161,7 +1167,16 @@ export async function createManualBookingAction(
     const jobLink = `${siteUrl}/admin/jobs/${newJob.id}`;
 
     if (bookingType === "inspection") {
+      const day = scheduleDays[0];
+      const starts_at = new Date(`${day.date}T${day.startTime}`).toISOString();
+      const ends_at = new Date(`${day.date}T${day.endTime}`).toISOString();
       const calendarUid = `inspection-${newJob.id}@ecoenergyguard.com`;
+      const token = await createManageToken(newJob.id);
+      if (!token)
+        throw new Error(
+          "Could not create customer manage link for manual booking.",
+        );
+      const manageLink = createCustomerManageLink(token);
       const icsContent = createCalendarInvite({
         uid: calendarUid,
         sequence: 0,
@@ -1181,7 +1196,7 @@ export async function createManualBookingAction(
         startsAt: starts_at,
         endsAt: ends_at,
         address: fullAddress,
-        manageLink: jobLink, // Admins can manage via job link
+        manageLink: manageLink,
         icsContent,
       });
 
@@ -1196,7 +1211,7 @@ export async function createManualBookingAction(
           startsAt: starts_at,
           endsAt: ends_at,
           address: fullAddress,
-          issueNotes: notes,
+          issueNotes: day.notes,
           jobLink,
           icsContent,
         });
@@ -1212,24 +1227,22 @@ export async function createManualBookingAction(
     } else {
       // Installation
       const calendarUid = `installation-${newJob.id}@ecoenergyguard.com`;
-      const icsContent = createCalendarInvite({
+      const icsContent = createMultiDayCalendarInvite({
         uid: calendarUid,
         sequence: 0,
         title: `Eco Energy Guard Installation - ${customerName}`,
         description: `Installation appointment for ${customerName}.`,
         location: fullAddress,
-        startsAt: starts_at,
-        endsAt: ends_at,
         organizerEmail: process.env.SMTP_USER || "info@ecoenergyguard.com",
         attendees: [email, ...teamEmails],
+        days: scheduleDays,
         method: "REQUEST",
       });
 
       await sendInstallationScheduledCustomerEmail({
         to: email,
         customerName,
-        startsAt: starts_at,
-        endsAt: ends_at,
+        scheduleDays,
         address: fullAddress,
         icsContent,
       });
@@ -1242,8 +1255,7 @@ export async function createManualBookingAction(
           customerName,
           customerEmail: email,
           customerPhone: phone,
-          startsAt: starts_at,
-          endsAt: ends_at,
+          scheduleDays,
           address: fullAddress,
           jobLink,
           icsContent,
@@ -1289,9 +1301,7 @@ export async function resendLastEmailAction(
     .select(
       `
       *,
-      customers (*),
-      inspection_slot:inspection_slot_id (*),
-      installation_slot:installation_slot_id (*)
+      customers (*)
     `,
     )
     .eq("id", jobId)
@@ -1318,10 +1328,15 @@ export async function resendLastEmailAction(
 
   try {
     switch (job.status) {
+      // NOTE: This case still uses the old single-slot logic for inspections.
+      // This is correct as inspections are still single-day events.
       case "inspection_scheduled": {
-        const slot = Array.isArray(job.inspection_slot)
-          ? job.inspection_slot[0]
-          : job.inspection_slot;
+        const { data: slotData } = await supabase
+          .from("slots")
+          .select("starts_at, ends_at")
+          .eq("id", job.inspection_slot_id as string)
+          .single();
+        const slot = slotData;
         if (!slot) return { ok: false, message: "Inspection slot not found." };
 
         const token = await createManageToken(jobId);
@@ -1420,11 +1435,14 @@ export async function resendLastEmailAction(
       }
 
       case "installation_scheduled": {
-        const slot = Array.isArray(job.installation_slot)
-          ? job.installation_slot[0]
-          : job.installation_slot;
-        if (!slot)
-          return { ok: false, message: "Installation slot not found." };
+        const { data: scheduleDays } = await supabase
+          .from("installation_proposals")
+          .select("day_number, starts_at, ends_at")
+          .eq("job_id", jobId)
+          .eq("status", "accepted")
+          .order("day_number", { ascending: true });
+        if (!scheduleDays?.length)
+          return { ok: false, message: "Installation schedule not found." };
 
         const { data: assignments } = await supabase
           .from("job_assignments")
@@ -1452,24 +1470,22 @@ export async function resendLastEmailAction(
 
         const newSequence = (job.installation_calendar_sequence || 0) + 1;
 
-        const icsContent = createCalendarInvite({
+        const icsContent = createMultiDayCalendarInvite({
           uid: calendarUid,
           sequence: newSequence,
           title: `Eco Energy Guard Installation - ${customerName}`,
           description: `Installation appointment for ${customerName}.`,
           location: address,
-          startsAt: slot.starts_at,
-          endsAt: slot.ends_at,
           organizerEmail: process.env.SMTP_USER || "info@ecoenergyguard.com",
           attendees: [customer.email, ...teamEmails],
+          days: scheduleDays,
           method: "REQUEST",
         });
 
         await sendInstallationScheduledCustomerEmail({
           to: customer.email,
           customerName,
-          startsAt: slot.starts_at,
-          endsAt: slot.ends_at,
+          scheduleDays,
           address,
           icsContent,
         });

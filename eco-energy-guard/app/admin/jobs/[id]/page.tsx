@@ -14,6 +14,7 @@ import {
   Save,
   Send,
   UserCheck,
+  Plus,
   FileCheck,
   XCircle,
 } from "lucide-react";
@@ -37,6 +38,7 @@ type JobStatus =
   | "inspection_completed"
   | "estimate_sent"
   | "installation_scheduled"
+  | "installation_proposal_changes_requested"
   | "completed"
   | "cancelled";
 
@@ -45,12 +47,6 @@ type TeamMember = {
   full_name: string | null;
   email: string | null;
   role: string;
-};
-
-type Slot = {
-  id: string;
-  starts_at: string;
-  ends_at: string;
 };
 
 type Job = {
@@ -78,7 +74,6 @@ type Job = {
     state: string | null;
     zip: string | null;
   } | null;
-  installation_slot: Slot | null;
 };
 
 const statusLabels: Record<JobStatus, string> = {
@@ -89,6 +84,7 @@ const statusLabels: Record<JobStatus, string> = {
   inspection_completed: "Inspection Completed",
   estimate_sent: "Estimate Sent",
   installation_scheduled: "Installation Scheduled",
+  installation_proposal_changes_requested: "Installation - Changes Requested",
   completed: "Completed",
   cancelled: "Cancelled",
 };
@@ -99,9 +95,20 @@ export default function AdminJobPage() {
 
   const [job, setJob] = useState<Job | null>(null);
   const [team, setTeam] = useState<TeamMember[]>([]);
+  const [installationProposals, setInstallationProposals] = useState<any[]>([]);
   const [selectedTeamIds, setSelectedTeamIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
+  type InstallationProposalRow = {
+    day_number: number;
+    date: string;
+    start_time: string;
+    end_time: string;
+    notes: string;
+  };
+  const [proposalRows, setProposalRows] = useState<InstallationProposalRow[]>(
+    [],
+  );
 
   async function loadJob() {
     setLoading(true);
@@ -120,11 +127,6 @@ export default function AdminJobPage() {
           city,
           state,
           zip
-        ),
-        installation_slot:installation_slot_id (
-          id,
-          starts_at,
-          ends_at
         )
       `,
       )
@@ -139,9 +141,6 @@ export default function AdminJobPage() {
         customers: Array.isArray(jobData.customers)
           ? (jobData.customers[0] ?? null)
           : jobData.customers,
-        installation_slot: Array.isArray(jobData.installation_slot)
-          ? (jobData.installation_slot[0] ?? null)
-          : jobData.installation_slot,
       } as Job);
     }
 
@@ -159,6 +158,27 @@ export default function AdminJobPage() {
       .eq("assignment_type", "inspection");
 
     setSelectedTeamIds((assignments || []).map((item) => item.user_id));
+
+    const { data: proposals } = await supabase
+      .from("installation_proposals")
+      .select("*")
+      .eq("job_id", params.id)
+      .in("status", ["proposed", "accepted", "changes_requested"])
+      .order("day_number", { ascending: true });
+
+    setInstallationProposals(proposals || []);
+
+    setProposalRows(
+      (proposals || [])
+        .filter((p) => p.status === "proposed" || p.status === "accepted")
+        .map((proposal) => ({
+          day_number: proposal.day_number,
+          date: proposal.starts_at.split("T")[0],
+          start_time: new Date(proposal.starts_at).toTimeString().slice(0, 5),
+          end_time: new Date(proposal.ends_at).toTimeString().slice(0, 5),
+          notes: proposal.notes || "",
+        })),
+    );
 
     setLoading(false);
   }
@@ -203,6 +223,44 @@ export default function AdminJobPage() {
     }
 
     setMessage("Job saved.");
+    await loadJob();
+  }
+
+  async function saveInstallationProposal() {
+    if (!job) return;
+
+    const validRows = proposalRows.filter(
+      (row) => row.date && row.start_time && row.end_time,
+    );
+
+    if (!validRows.length) {
+      setMessage("Add at least one installation proposal day.");
+      return;
+    }
+
+    await supabase
+      .from("installation_proposals")
+      .delete()
+      .eq("job_id", job.id)
+      .in("status", ["proposed", "changes_requested"]);
+
+    const { error } = await supabase.from("installation_proposals").insert(
+      validRows.map((row, index) => ({
+        job_id: job.id,
+        day_number: index + 1,
+        starts_at: new Date(`${row.date}T${row.start_time}`).toISOString(),
+        ends_at: new Date(`${row.date}T${row.end_time}`).toISOString(),
+        notes: row.notes || null,
+        status: "proposed",
+      })),
+    );
+
+    if (error) {
+      setMessage(error.message);
+      return;
+    }
+
+    setMessage("Installation proposal saved.");
     await loadJob();
   }
 
@@ -632,6 +690,103 @@ export default function AdminJobPage() {
             )}
 
             {(job.status === "inspection_completed" ||
+              job.status === "estimate_sent" ||
+              job.status === "installation_proposal_changes_requested") && (
+              <div className="rounded-[2rem] border bg-white p-6 shadow-sm sm:p-8">
+                <h2 className="text-2xl font-bold">Installation Proposal</h2>
+                <p className="mt-3 text-muted-foreground">
+                  Add one or more proposed installation days before sending the
+                  estimate.
+                </p>
+
+                <div className="mt-6 grid gap-4">
+                  {proposalRows.map((row, index) => (
+                    <div key={index} className="rounded-2xl bg-secondary p-4">
+                      <div className="flex items-center justify-between">
+                        <p className="font-semibold">Day {index + 1}</p>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setProposalRows(
+                              proposalRows.filter((_, i) => i !== index),
+                            )
+                          }
+                          className="text-xs font-semibold text-red-500 hover:text-red-700"
+                        >
+                          Remove
+                        </button>
+                      </div>
+
+                      <div className="mt-4 grid gap-4 sm:grid-cols-3">
+                        <input
+                          type="date"
+                          value={row.date}
+                          onChange={(e) => {
+                            const newRows = [...proposalRows];
+                            newRows[index].date = e.target.value;
+                            setProposalRows(newRows);
+                          }}
+                          className="h-11 w-full rounded-lg border bg-background px-3"
+                        />
+                        <input
+                          type="time"
+                          value={row.start_time}
+                          onChange={(e) => {
+                            const newRows = [...proposalRows];
+                            newRows[index].start_time = e.target.value;
+                            setProposalRows(newRows);
+                          }}
+                          className="h-11 w-full rounded-lg border bg-background px-3"
+                        />
+                        <input
+                          type="time"
+                          value={row.end_time}
+                          onChange={(e) => {
+                            const newRows = [...proposalRows];
+                            newRows[index].end_time = e.target.value;
+                            setProposalRows(newRows);
+                          }}
+                          className="h-11 w-full rounded-lg border bg-background px-3"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setProposalRows([
+                        ...proposalRows,
+                        {
+                          day_number: proposalRows.length + 1,
+                          date: "",
+                          start_time: "09:00",
+                          end_time: "13:00",
+                          notes: "",
+                        },
+                      ])
+                    }
+                    className="inline-flex h-11 items-center justify-center rounded-full border bg-white px-6 text-sm font-semibold transition hover:bg-muted"
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Day
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={saveInstallationProposal}
+                    className="inline-flex h-11 items-center justify-center rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
+                  >
+                    <Save className="mr-2 h-4 w-4" />
+                    Save Installation Proposal
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {(job.status === "inspection_completed" ||
               job.status === "estimate_sent") && (
               <div className="rounded-[2rem] border bg-white p-6 shadow-sm sm:p-8">
                 <div className="flex items-center gap-3">
@@ -718,7 +873,8 @@ export default function AdminJobPage() {
             )}
 
             {(job.status === "installation_requested" ||
-              job.status === "installation_scheduled") && (
+              job.status === "installation_scheduled" ||
+              job.status === "installation_proposal_changes_requested") && (
               <div className="rounded-[2rem] border bg-white p-6 shadow-sm sm:p-8">
                 <h2 className="text-2xl font-bold">
                   Review Installation Request
@@ -726,46 +882,53 @@ export default function AdminJobPage() {
 
                 <p className="mt-3 text-muted-foreground">
                   The customer selected an installation time. Review and approve
-                  it before confirmation emails and calendar invites are sent.
+                  it, or propose a new schedule.
                 </p>
 
                 <div className="mt-6 space-y-4">
-                  <div className="rounded-2xl bg-secondary p-5">
-                    <p className="text-sm font-semibold">
-                      Requested Installation Time
-                    </p>
-                    <div className="mt-2 space-y-2 text-sm text-muted-foreground">
-                      <p>
-                        <strong>Time:</strong>{" "}
-                        {job.installation_slot
-                          ? `${new Date(
-                              job.installation_slot.starts_at,
-                            ).toLocaleDateString()} ${new Date(
-                              job.installation_slot.starts_at,
-                            ).toLocaleTimeString([], {
+                  {installationProposals
+                    .filter((p) => p.status === "accepted")
+                    .map((proposal) => (
+                      <div
+                        key={proposal.id}
+                        className="rounded-2xl bg-secondary p-5"
+                      >
+                        <p className="text-sm font-semibold">
+                          Accepted Installation Schedule
+                        </p>
+                        <div className="mt-2 space-y-2 text-sm text-muted-foreground">
+                          <p>
+                            <strong>Day {proposal.day_number}:</strong>{" "}
+                            {new Date(proposal.starts_at).toLocaleDateString()}{" "}
+                            {new Date(proposal.starts_at).toLocaleTimeString(
+                              [],
+                              { hour: "numeric", minute: "2-digit" },
+                            )}{" "}
+                            -{" "}
+                            {new Date(proposal.ends_at).toLocaleTimeString([], {
                               hour: "numeric",
                               minute: "2-digit",
-                            })} – ${new Date(
-                              job.installation_slot.ends_at,
-                            ).toLocaleTimeString([], {
-                              hour: "numeric",
-                              minute: "2-digit",
-                            })}`
-                          : "No installation time selected."}
-                      </p>
-                      <p>
-                        <strong>Location:</strong>{" "}
-                        {[
-                          customer?.address,
-                          customer?.city,
-                          customer?.state,
-                          customer?.zip,
-                        ]
-                          .filter(Boolean)
-                          .join(", ") || "No address provided"}
-                      </p>
-                    </div>
-                  </div>
+                            })}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+
+                  {installationProposals
+                    .filter((p) => p.status === "changes_requested")
+                    .map((proposal) => (
+                      <div
+                        key={proposal.id}
+                        className="rounded-2xl bg-amber-50 p-5"
+                      >
+                        <p className="text-sm font-semibold text-amber-800">
+                          Customer Requested Changes
+                        </p>
+                        <p className="mt-2 text-sm text-amber-700">
+                          {proposal.change_request_message}
+                        </p>
+                      </div>
+                    ))}
 
                   <div className="rounded-2xl bg-secondary p-5">
                     <p className="text-sm font-semibold">Inspection Details</p>
@@ -819,7 +982,11 @@ export default function AdminJobPage() {
                   </div>
                 </div>
 
-                {job.status === "installation_requested" && (
+                {(job.status === "installation_requested" ||
+                  job.status === "installation_proposal_changes_requested" ||
+                  installationProposals.some(
+                    (p) => p.status === "accepted",
+                  )) && (
                   <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                     <button
                       type="button"

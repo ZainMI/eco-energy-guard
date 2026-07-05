@@ -254,39 +254,101 @@ export function estimateReadyHtml({
   `;
 }
 
+type ScheduleDay = {
+  day_number: number;
+  starts_at: string;
+  ends_at: string;
+};
+
+function scheduleHtml(days: ScheduleDay[]) {
+  return days
+    .map((day) => {
+      const start = new Date(day.starts_at);
+      const end = new Date(day.ends_at);
+
+      return `
+        <p>
+          <strong>Day ${day.day_number}:</strong>
+          ${start.toLocaleDateString()}
+          ${start.toLocaleTimeString([], {
+            hour: "numeric",
+            minute: "2-digit",
+          })}
+          –
+          ${end.toLocaleTimeString([], {
+            hour: "numeric",
+            minute: "2-digit",
+          })}
+        </p>
+      `;
+    })
+    .join("");
+}
+
+export function installationProposalAcceptedWorkerHtml({
+  workerName,
+  customerName,
+}: {
+  workerName: string;
+  customerName: string;
+}) {
+  return `
+    <div style="font-family: Arial, sans-serif; max-width: 640px; margin: 0 auto; color: #222;">
+      <h1>Installation schedule accepted</h1>
+      <p>Hi ${workerName},</p>
+      <p><strong>${customerName}</strong> accepted the proposed installation schedule.</p>
+      <p>Please review and approve it in the admin dashboard.</p>
+      <p>Eco Energy Guard</p>
+    </div>
+  `;
+}
+
+export function installationProposalChangesRequestedWorkerHtml({
+  workerName,
+  customerName,
+  message,
+}: {
+  workerName: string;
+  customerName: string;
+  message: string;
+}) {
+  return `
+    <div style="font-family: Arial, sans-serif; max-width: 640px; margin: 0 auto; color: #222;">
+      <h1>Installation schedule changes requested</h1>
+      <p>Hi ${workerName},</p>
+      <p><strong>${customerName}</strong> requested changes to the proposed installation schedule.</p>
+
+      <div style="background:#f6f3ea; border-radius:16px; padding:20px; margin:24px 0;">
+        <p>${message}</p>
+      </div>
+
+      <p>Please review this in the admin dashboard.</p>
+      <p>Eco Energy Guard</p>
+    </div>
+  `;
+}
+
 export function installationScheduledCustomerHtml({
   customerName,
-  startsAt,
-  endsAt,
+  scheduleDays,
   address,
 }: {
   customerName: string;
-  startsAt: string;
-  endsAt: string;
+  scheduleDays: ScheduleDay[];
   address: string;
 }) {
-  const start = new Date(startsAt);
-  const end = new Date(endsAt);
-
   return `
     <div style="font-family: Arial, sans-serif; max-width: 640px; margin: 0 auto; color: #222;">
       <h1>Your installation is scheduled</h1>
       <p>Hi ${customerName},</p>
-      <p>Your Eco Energy Guard installation has been scheduled.</p>
+      <p>Your Eco Energy Guard installation has been approved and scheduled.</p>
 
       <div style="background:#f6f3ea; border-radius:16px; padding:20px; margin:24px 0;">
-        <p><strong>Date:</strong> ${start.toLocaleDateString()}</p>
-        <p><strong>Time:</strong> ${start.toLocaleTimeString([], {
-          hour: "numeric",
-          minute: "2-digit",
-        })} – ${end.toLocaleTimeString([], {
-          hour: "numeric",
-          minute: "2-digit",
-        })}</p>
+        ${scheduleHtml(scheduleDays)}
         <p><strong>Address:</strong> ${address}</p>
       </div>
 
-      <p>A calendar invite is attached to this email.</p>
+      <p>Calendar invites are attached to this email.</p>
       <p>Thank you,<br />Eco Energy Guard</p>
     </div>
   `;
@@ -297,8 +359,7 @@ export function installationAssignedWorkerHtml({
   customerName,
   customerEmail,
   customerPhone,
-  startsAt,
-  endsAt,
+  scheduleDays,
   address,
   jobLink,
 }: {
@@ -306,14 +367,10 @@ export function installationAssignedWorkerHtml({
   customerName: string;
   customerEmail: string;
   customerPhone?: string | null;
-  startsAt: string;
-  endsAt: string;
+  scheduleDays: ScheduleDay[];
   address: string;
   jobLink: string;
 }) {
-  const start = new Date(startsAt);
-  const end = new Date(endsAt);
-
   return `
     <div style="font-family: Arial, sans-serif; max-width: 640px; margin: 0 auto; color: #222;">
       <h1>You’ve been assigned an installation</h1>
@@ -321,44 +378,19 @@ export function installationAssignedWorkerHtml({
 
       <div style="background:#f6f3ea; border-radius:16px; padding:20px; margin:24px 0;">
         <p><strong>Customer:</strong> ${customerName}</p>
-        <p><strong>Date:</strong> ${start.toLocaleDateString()}</p>
-        <p><strong>Time:</strong> ${start.toLocaleTimeString([], {
-          hour: "numeric",
-          minute: "2-digit",
-        })} – ${end.toLocaleTimeString([], {
-          hour: "numeric",
-          minute: "2-digit",
-        })}</p>
+        ${scheduleHtml(scheduleDays)}
         <p><strong>Address:</strong> ${address}</p>
         <p><strong>Email:</strong> ${customerEmail}</p>
         <p><strong>Phone:</strong> ${customerPhone || "Not provided"}</p>
       </div>
 
-      <p>A calendar invite is attached to this email.</p>
+      <p>Calendar invites are attached to this email.</p>
 
       <p>
         <a href="${jobLink}" style="color:#047857; font-weight:bold;">
           Open this job in the admin dashboard
         </a>
       </p>
-    </div>
-  `;
-}
-
-export function installationRequestedWorkerHtml({
-  workerName,
-  customerName,
-}: {
-  workerName: string;
-  customerName: string;
-}) {
-  return `
-    <div style="font-family: Arial, sans-serif; max-width: 640px; margin: 0 auto; color: #222;">
-      <h1>Installation time requested</h1>
-      <p>Hi ${workerName},</p>
-      <p><strong>${customerName}</strong> has requested an installation time.</p>
-      <p>Please review and approve it in the admin dashboard.</p>
-      <p>Eco Energy Guard</p>
     </div>
   `;
 }
