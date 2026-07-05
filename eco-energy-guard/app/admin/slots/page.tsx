@@ -302,9 +302,9 @@ export default function AdminSlotsPage() {
           </p>
         </div>
 
-        <div className="mt-10 grid gap-8 lg:grid-cols-[0.8fr_1.2fr] items-start">
+        <div className="mt-10 grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
           {/* COLUMN 1: Add/Configure Schedules form panel */}
-          <div className="rounded-[2rem] border border-stone-200 bg-white p-6 shadow-sm sticky top-6">
+          <div className="rounded-[2rem] border border-stone-200 bg-white p-4 shadow-sm sm:p-6 lg:sticky lg:top-6">
             <h2 className="text-xl font-bold text-stone-900 flex items-center gap-2">
               <Plus className="h-5 w-5 text-primary" />
               Configure Openings
@@ -483,7 +483,7 @@ export default function AdminSlotsPage() {
           {/* COLUMN 2: Calendar Overview & Selected Date Drawer details */}
           <div className="space-y-6">
             {/* Filtering Controls Ribbon Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3 border rounded-2xl shadow-sm">
+            <div className="flex flex-col gap-3 rounded-2xl border bg-white p-2 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-3">
               <div className="flex flex-wrap gap-1">
                 {(["all", "inspection", "installation"] as FilterType[]).map(
                   (typeOpt) => (
@@ -494,7 +494,7 @@ export default function AdminSlotsPage() {
                         setFilter(typeOpt);
                         setSelectedDate(""); // clear current day lookup view
                       }}
-                      className={`px-4 py-1.5 text-xs font-bold rounded-xl transition capitalize cursor-pointer ${
+                      className={`cursor-pointer rounded-xl px-3 py-1.5 text-xs font-bold capitalize transition sm:px-4 ${
                         filter === typeOpt
                           ? "bg-stone-900 text-white"
                           : "text-stone-500 hover:bg-stone-50"
@@ -561,7 +561,7 @@ export default function AdminSlotsPage() {
                       key={cell.dateString}
                       type="button"
                       onClick={() => setSelectedDate(cell.dateString)}
-                      className={`h-12 w-full text-sm rounded-xl flex flex-col items-center justify-center transition border relative cursor-pointer
+                      className={`relative flex h-11 w-full cursor-pointer flex-col items-center justify-center rounded-xl border text-sm transition
                         ${
                           isViewing
                             ? "bg-stone-900 text-white border-stone-900 font-bold shadow-sm"

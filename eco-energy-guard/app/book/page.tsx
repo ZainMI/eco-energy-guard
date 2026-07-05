@@ -306,9 +306,6 @@ export default function BookPage() {
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="text-sm font-semibold">
-                    Property Address
-                  </label>
                   {!address ? (
                     <AddressAutocomplete
                       onSelect={(place) => {
