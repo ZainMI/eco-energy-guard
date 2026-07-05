@@ -22,16 +22,10 @@ export function inspectionApprovedHtml({
       <div style="background:#f6f3ea; border-radius:16px; padding:20px; margin:24px 0;">
         <p><strong>Time:</strong> ${formatDateTimeRange(startsAt, endsAt)}</p>
         <p><strong>Address:</strong> ${address}</p>
+        <p style="margin-top: 16px;">If you need to make a change, you can <a href="${manageLink}" style="color:#047857; font-weight:bold;">reschedule or cancel your appointment here</a>.</p>
       </div>
 
       <p>A calendar invite is attached to this email.</p>
-
-      <p>
-        Need to make a change?<br />
-        <a href="${manageLink}" style="color:#047857; font-weight:bold;">
-          Reschedule or cancel your appointment
-        </a>
-      </p>
 
       <p>Thank you,<br />Eco Energy Guard</p>
     </div>
@@ -71,6 +65,7 @@ export function inspectionAssignedHtml({
         <p><strong>Address:</strong> ${address}</p>
         <p><strong>Email:</strong> ${customerEmail}</p>
         <p><strong>Phone:</strong> ${customerPhone || "Not provided"}</p>
+        <p style="margin-top: 16px;">You can <a href="${jobLink}" style="color:#047857; font-weight:bold;">open this job in the admin dashboard</a> for more details.</p>
       </div>
 
       ${
@@ -84,11 +79,6 @@ export function inspectionAssignedHtml({
 
       <p>A calendar invite is attached to this email.</p>
 
-      <p>
-        <a href="${jobLink}" style="color:#047857; font-weight:bold;">
-          Open this job in the admin dashboard
-        </a>
-      </p>
     </div>
   `;
 }
@@ -105,12 +95,9 @@ export function inspectionRescheduleHtml({
       <h1>Let's find a better inspection time</h1>
       <p>Hi ${customerName},</p>
       <p>We need to reschedule your requested home energy inspection time.</p>
-      <p>
-        Please choose a new available time here:<br />
-        <a href="${manageLink}" style="color:#047857; font-weight:bold;">
-          Reschedule your inspection
-        </a>
-      </p>
+      <div style="background:#f6f3ea; border-radius:16px; padding:20px; margin:24px 0;">
+        <p>Please <a href="${manageLink}" style="color:#047857; font-weight:bold;">choose a new available time here</a> to reschedule your inspection.</p>
+      </div>
       <p>Thank you,<br />Eco Energy Guard</p>
     </div>
   `;
@@ -221,15 +208,8 @@ export function estimateReadyHtml({
             ? `<p><strong>Notes:</strong><br />${customerNotes}</p>`
             : ""
         }
+        <p style="margin-top: 16px;">If you would like to move forward, please <a href="${scheduleLink}" style="color:#047857; font-weight:bold;">choose an available installation time</a>.</p>
       </div>
-
-      <p>If you would like to move forward, please choose an available installation time:</p>
-
-      <p>
-        <a href="${scheduleLink}" style="color:#047857; font-weight:bold;">
-          Schedule your installation
-        </a>
-      </p>
 
       <p>Thank you,<br />Eco Energy Guard</p>
     </div>
@@ -356,11 +336,7 @@ export function installationAssignedWorkerHtml({
 
       <p>Calendar invites are attached to this email.</p>
 
-      <p>
-        <a href="${jobLink}" style="color:#047857; font-weight:bold;">
-          Open this job in the admin dashboard
-        </a>
-      </p>
+      <p>You can <a href="${jobLink}" style="color:#047857; font-weight:bold;">open this job in the admin dashboard</a> for more details.</p>
     </div>
   `;
 }
