@@ -171,32 +171,31 @@ export default function BookPage() {
 
     setSubmitting(true);
 
-    const { data: customer, error: customerError } = await supabase
-      .from("customers")
-      .insert({
-        first_name: firstName,
-        last_name: lastName,
-        email,
-        phone: phone || null,
-        address: address || null,
-        city: city || null,
-        state: stateValue || null,
-        zip: zip || null,
-        latitude,
-        longitude,
-        osm_place_id: osmPlaceId || null,
-      })
-      .select("id")
-      .single();
+    const customerId = crypto.randomUUID();
 
-    if (customerError || !customer) {
-      setMessage(customerError?.message || "Could not create customer.");
+    const { error: customerError } = await supabase.from("customers").insert({
+      id: customerId,
+      first_name: firstName,
+      last_name: lastName,
+      email,
+      phone: phone || null,
+      address: address || null,
+      city: city || null,
+      state: stateValue || null,
+      zip: zip || null,
+      latitude,
+      longitude,
+      osm_place_id: osmPlaceId || null,
+    });
+
+    if (customerError) {
+      setMessage(customerError.message || "Could not create customer.");
       setSubmitting(false);
       return;
     }
 
     const { error: jobError } = await supabase.from("jobs").insert({
-      customer_id: customer.id,
+      customer_id: customerId,
       inspection_slot_id: selectedSlotId,
       status: "inspection_requested",
       issue_notes: issueNotes || null,
