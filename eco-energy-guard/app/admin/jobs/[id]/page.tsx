@@ -49,6 +49,12 @@ type TeamMember = {
   role: string;
 };
 
+type Slot = {
+  id: string;
+  starts_at: string;
+  ends_at: string;
+};
+
 type Job = {
   id: string;
   status: JobStatus;
@@ -64,6 +70,8 @@ type Job = {
   manual_estimate_amount: number | null;
   estimate_sent_at: string | null;
   created_at: string;
+  inspection_slot: Slot | null;
+  installation_slot: Slot | null;
   customers: {
     first_name: string;
     last_name: string;
@@ -127,7 +135,9 @@ export default function AdminJobPage() {
           city,
           state,
           zip
-        )
+        ),
+        inspection_slot:inspection_slot_id(id, starts_at, ends_at),
+        installation_slot:installation_slot_id(id, starts_at, ends_at)
       `,
       )
       .eq("id", params.id)
@@ -141,6 +151,12 @@ export default function AdminJobPage() {
         customers: Array.isArray(jobData.customers)
           ? (jobData.customers[0] ?? null)
           : jobData.customers,
+        inspection_slot: Array.isArray(jobData.inspection_slot)
+          ? (jobData.inspection_slot[0] ?? null)
+          : jobData.inspection_slot,
+        installation_slot: Array.isArray(jobData.installation_slot)
+          ? (jobData.installation_slot[0] ?? null)
+          : jobData.installation_slot,
       } as Job);
     }
 
@@ -382,6 +398,15 @@ export default function AdminJobPage() {
     ? `${customer.first_name} ${customer.last_name}`
     : "Unknown Customer";
 
+  const formatSlot = (slot: Slot | null) => {
+    if (!slot) return "Not scheduled";
+    const start = new Date(slot.starts_at);
+    const end = new Date(slot.ends_at);
+    return `${start.toLocaleDateString()} at ${start.toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "2-digit",
+    })} - ${end.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`;
+  };
   return (
     <section className="min-h-screen bg-gradient-to-br from-stone-50 via-amber-50 to-emerald-50 py-10 sm:py-16">
       <Container>
@@ -456,6 +481,22 @@ export default function AdminJobPage() {
               </div>
             </div>
 
+            <div className="rounded-[2rem] border bg-white p-6 shadow-sm">
+              <h2 className="text-2xl font-bold">Schedule</h2>
+
+              <div className="mt-5 space-y-3 text-sm text-muted-foreground">
+                <p>
+                  <strong>Inspection:</strong> {formatSlot(job.inspection_slot)}
+                </p>
+                <p>
+                  <strong>Installation:</strong>{" "}
+                  {formatSlot(job.installation_slot) ||
+                    (installationProposals.length > 0
+                      ? "Pending approval"
+                      : "Not scheduled")}
+                </p>
+              </div>
+            </div>
             <div className="rounded-[2rem] border bg-white p-6 shadow-sm">
               <h2 className="text-2xl font-bold">Inspection Team</h2>
 
