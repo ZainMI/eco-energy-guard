@@ -1,22 +1,59 @@
-import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
-  Award,
+  BadgeCheck,
+  Calendar,
   CheckCircle2,
+  ChevronRight,
   Home,
+  Leaf,
+  MapPin,
+  Phone,
   ShieldCheck,
   Sparkles,
   Star,
   ThermometerSun,
+  Zap,
 } from "lucide-react";
 import Container from "@/components/layout/Container";
+import ImagePlaceholder from "@/components/ui/image-placeholder";
 
 const services = [
-  "Home Energy Inspections",
-  "Insulation Upgrades",
-  "Foam Air Sealing",
-  "Reflective Insulation",
+  {
+    id: "foam-air-sealing",
+    icon: ShieldCheck,
+    title: "Foam Air Sealing",
+    description:
+      "Stop drafts at the source with professional spray foam applied around penetrations, gaps, and common leakage points throughout your home.",
+  },
+  {
+    id: "blown-in-insulation",
+    icon: Sparkles,
+    title: "Blown-in Insulation",
+    description:
+      "Loose-fill insulation blown into attics and hard-to-reach spaces for complete, even coverage that dramatically improves comfort.",
+  },
+  {
+    id: "batt-insulation",
+    icon: Home,
+    title: "Batt Insulation",
+    description:
+      "Pre-cut fiberglass batts installed between framing members in walls, floors, and ceilings for reliable thermal performance.",
+  },
+  {
+    id: "dense-packed",
+    icon: ThermometerSun,
+    title: "Dense Packed",
+    description:
+      "High-density cellulose packed tightly into wall cavities to eliminate air movement and maximize insulation value.",
+  },
+  {
+    id: "dense-packed-garage-ceilings",
+    icon: Home,
+    title: "Dense Packed Garage Ceilings",
+    description:
+      "Insulate the ceiling above your attached garage to prevent cold floors and temperature extremes in rooms above.",
+  },
 ];
 
 const reviews = [
@@ -37,24 +74,56 @@ const reviews = [
   },
 ];
 
+const ctTowns = [
+  "Hartford",
+  "West Hartford",
+  "Glastonbury",
+  "Wethersfield",
+  "Newington",
+  "Rocky Hill",
+  "New Britain",
+  "Berlin",
+  "Southington",
+  "Meriden",
+  "Wallingford",
+  "Cheshire",
+  "Middletown",
+  "Plainville",
+  "Bristol",
+  "Farmington",
+  "Avon",
+  "Simsbury",
+  "Bloomfield",
+  "East Hartford",
+];
+
 export default function HomePage() {
   return (
     <>
+      {/* ─── HERO ─── */}
       <section className="overflow-hidden bg-gradient-to-br from-stone-50 via-amber-50 to-emerald-50">
-        <Container className="grid gap-12 py-14 sm:py-20 lg:grid-cols-2 lg:items-center lg:py-24">
+        <Container className="grid gap-10 py-14 sm:py-20 lg:grid-cols-2 lg:items-center lg:gap-16 lg:py-28">
+          {/* Left: text */}
           <div>
             <div className="inline-flex rounded-full border bg-white px-4 py-2 text-xs font-semibold text-muted-foreground shadow-sm sm:text-sm">
-              Certified home energy experts
+              ⭐ 100+ Five-Star Google Reviews · Est. 2008
             </div>
 
             <h1 className="mt-6 text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
-              Make your home warmer, healthier, and more energy efficient.
+              Local Business.
+              <br />
+              Honest Pricing.
+              <br />
+              <span className="text-primary">Better Comfort.</span>
             </h1>
 
             <p className="mt-6 max-w-xl text-base leading-7 text-muted-foreground sm:text-lg sm:leading-8">
-              Eco Energy Guard helps homeowners identify energy loss, improve
-              insulation, seal drafts, and plan practical upgrades that make the
-              home feel better year-round.
+              Eco Energy Guard provides professional insulation and air sealing
+              throughout Central Connecticut.{" "}
+              <strong className="text-foreground">Free estimates</strong> — and
+              as an Energize CT partner, qualifying upgrades can save up to{" "}
+              <strong className="text-foreground">20% on energy bills</strong>{" "}
+              per year.
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -62,148 +131,178 @@ export default function HomePage() {
                 href="/book"
                 className="inline-flex h-12 items-center justify-center rounded-full bg-primary px-7 text-sm font-semibold text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-md"
               >
-                Request an Inspection
+                Book a Free Estimate
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
 
-              <Link
-                href="/gallery"
+              <a
+                href="tel:+18605550000"
                 className="inline-flex h-12 items-center justify-center rounded-full border bg-white px-7 text-sm font-semibold transition hover:-translate-y-0.5 hover:bg-muted"
               >
-                View Projects
-              </Link>
+                <Phone className="mr-2 h-4 w-4" />
+                Call Now — Free Inspection
+              </a>
+            </div>
+
+            <div className="mt-6 flex flex-wrap gap-2">
+              {[
+                "🏆 Energize CT Partner",
+                "📅 18+ Years in Business",
+                "⚡ Fast & Affordable",
+              ].map((badge) => (
+                <span
+                  key={badge}
+                  className="inline-flex rounded-full border bg-white px-3 py-1 text-xs font-medium text-muted-foreground shadow-sm"
+                >
+                  {badge}
+                </span>
+              ))}
             </div>
           </div>
 
+          {/* Right: hero image */}
           <div className="relative">
-            <div className="rounded-[2rem] border bg-white p-6 shadow-2xl">
-              <Image
-                src="/Logo.png"
-                alt="Eco Energy Guard logo"
-                width={180}
-                height={180}
-                priority
-                className="mx-auto rounded-full"
-              />
-
-              <div className="mt-8 grid gap-3">
-                {services.map((service) => (
-                  <div
-                    key={service}
-                    className="flex items-center gap-3 rounded-2xl bg-secondary p-4"
-                  >
-                    <CheckCircle2 className="h-5 w-5 shrink-0 text-primary" />
-                    <p className="font-semibold">{service}</p>
-                  </div>
-                ))}
+            <ImagePlaceholder
+              label="Hero image — e.g. insulation installation or crew at work"
+              className="aspect-[4/3] w-full rounded-[2rem] shadow-2xl"
+            />
+            {/* Floating review badge */}
+            <div className="absolute -bottom-5 -left-4 rounded-2xl border bg-white px-5 py-3 shadow-lg sm:-left-6">
+              <div className="flex items-center gap-2">
+                <div className="flex text-amber-500">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <Star key={s} className="h-4 w-4 fill-current" />
+                  ))}
+                </div>
+                <span className="text-sm font-bold">100+ Reviews</span>
               </div>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Google · 5-star rated
+              </p>
             </div>
           </div>
         </Container>
       </section>
 
-      <section className="py-14 sm:py-20">
+      {/* ─── TRUST BAR ─── */}
+      <section className="border-y bg-white py-5">
         <Container>
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-center">
             {[
-              "30+ years building experience",
-              "Approved rebate contractor",
-              "Owens Corning certified",
-              "5-star homeowner reviews",
-            ].map((item) => (
+              { icon: Star, label: "100+ Five-Star Google Reviews" },
+              { icon: Calendar, label: "Established 2008 · 18+ Years" },
+              { icon: Leaf, label: "Energize CT Rebate Partner" },
+              { icon: Zap, label: "Fast · Affordable · Professional" },
+              { icon: BadgeCheck, label: "Owens Corning Certified" },
+            ].map(({ icon: Icon, label }) => (
               <div
-                key={item}
-                className="rounded-3xl border bg-white p-5 shadow-sm"
+                key={label}
+                className="flex items-center gap-2 text-sm font-medium"
               >
-                <Award className="h-6 w-6 text-primary" />
-                <p className="mt-4 font-bold">{item}</p>
+                <Icon className="h-4 w-4 shrink-0 text-primary" />
+                <span>{label}</span>
               </div>
             ))}
           </div>
         </Container>
       </section>
 
-      <section className="bg-white py-16 sm:py-24">
+      {/* ─── SERVICES ─── */}
+      <section className="py-16 sm:py-24">
         <Container>
           <div className="mx-auto max-w-2xl text-center">
             <p className="text-sm font-semibold uppercase tracking-wide text-primary">
-              What We Do
+              Our Services
             </p>
             <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-5xl">
-              Practical energy upgrades for real homes.
+              Insulation solutions for every home.
             </h2>
+            <p className="mt-4 text-muted-foreground">
+              Available throughout Central Connecticut. Free estimates on all
+              services.
+            </p>
           </div>
 
-          <div className="mt-10 grid gap-5 md:grid-cols-3">
-            {[
-              {
-                icon: Home,
-                title: "Inspect",
-                text: "We start by understanding your home, comfort issues, drafts, and energy loss.",
-              },
-              {
-                icon: ThermometerSun,
-                title: "Improve",
-                text: "We recommend insulation, air sealing, and efficiency upgrades that make sense.",
-              },
-              {
-                icon: ShieldCheck,
-                title: "Install",
-                text: "If the project is a fit, our team completes the work with clean, professional installation.",
-              },
-            ].map((item) => {
-              const Icon = item.icon;
-
+          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {services.map((service) => {
+              const Icon = service.icon;
               return (
                 <div
-                  key={item.title}
-                  className="rounded-3xl border bg-stone-50 p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+                  key={service.id}
+                  id={service.id}
+                  className="group rounded-3xl border bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
                 >
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
-                    <Icon className="h-6 w-6" />
+                  <ImagePlaceholder
+                    label={`${service.title} — add photo here`}
+                    className="mb-4 aspect-video w-full"
+                  />
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
+                    <Icon className="h-5 w-5" />
                   </div>
-                  <h3 className="mt-5 text-2xl font-bold">{item.title}</h3>
-                  <p className="mt-3 leading-7 text-muted-foreground">
-                    {item.text}
+                  <h3 className="mt-4 text-xl font-bold">{service.title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    {service.description}
                   </p>
+                  <Link
+                    href={`/services#${service.id}`}
+                    className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-primary transition hover:gap-2"
+                  >
+                    Learn more <ChevronRight className="h-4 w-4" />
+                  </Link>
                 </div>
               );
             })}
           </div>
+
+          <div className="mt-10 text-center">
+            <Link
+              href="/services"
+              className="inline-flex h-12 items-center justify-center rounded-full bg-primary px-8 text-sm font-semibold text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-md"
+            >
+              View All Services
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Link>
+          </div>
         </Container>
       </section>
 
-      <section className="py-16 sm:py-24">
+      {/* ─── ENERGY SAVINGS / ENERGIZE CT ─── */}
+      <section className="bg-white py-16 sm:py-24">
         <Container>
-          <div className="rounded-[2rem] border bg-white p-6 shadow-sm sm:p-10">
+          <div className="overflow-hidden rounded-[2rem] bg-gradient-to-br from-emerald-600 to-emerald-800 p-8 text-white sm:p-12">
             <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
               <div>
-                <p className="text-sm font-semibold uppercase tracking-wide text-primary">
-                  Certified & Qualified
+                <p className="text-sm font-semibold uppercase tracking-wide text-emerald-200">
+                  Energize CT Rebate Program Partner
                 </p>
                 <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-5xl">
-                  Trained professionals. Clear recommendations.
+                  Save up to 20% on energy bills per year.
                 </h2>
-                <p className="mt-5 leading-8 text-muted-foreground">
-                  Eco Energy Guard combines building experience, home energy
-                  knowledge, approved rebate program participation, and
-                  certified insulation practices to help homeowners choose the
-                  right improvements.
+                <p className="mt-5 leading-8 text-emerald-100">
+                  As an approved Energize CT rebate contractor, we help you
+                  qualify for rebates on insulation and air sealing upgrades —
+                  reducing your out-of-pocket cost and your monthly energy bills
+                  at the same time.
                 </p>
+                <Link
+                  href="/book"
+                  className="mt-8 inline-flex h-12 items-center justify-center rounded-full bg-white px-8 text-sm font-semibold text-emerald-800 shadow-sm transition hover:-translate-y-0.5 hover:bg-stone-100"
+                >
+                  Get a Free Estimate
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
               </div>
 
-              <div className="grid gap-3">
+              <div className="grid grid-cols-2 gap-4">
                 {[
-                  "Approved contractor for Eversource and United Illuminating",
-                  "Top of the House certified Owens Corning contractor",
-                  "Home insulation, foam air sealing, inspections, attic ventilation, and more",
-                ].map((item) => (
-                  <div
-                    key={item}
-                    className="flex gap-3 rounded-2xl bg-secondary p-4"
-                  >
-                    <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                    <p className="font-medium">{item}</p>
+                  { value: "20%", label: "Average energy savings per year" },
+                  { value: "100+", label: "Five-star Google reviews" },
+                  { value: "18+", label: "Years in business since 2008" },
+                  { value: "FREE", label: "Inspection & estimate, no obligation" },
+                ].map(({ value, label }) => (
+                  <div key={label} className="rounded-2xl bg-white/10 p-5">
+                    <p className="text-3xl font-bold">{value}</p>
+                    <p className="mt-1 text-sm text-emerald-200">{label}</p>
                   </div>
                 ))}
               </div>
@@ -212,15 +311,115 @@ export default function HomePage() {
         </Container>
       </section>
 
+      {/* ─── HOW IT WORKS ─── */}
+      <section className="py-16 sm:py-24">
+        <Container>
+          <div className="mx-auto max-w-2xl text-center">
+            <p className="text-sm font-semibold uppercase tracking-wide text-primary">
+              Simple Process
+            </p>
+            <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-5xl">
+              Getting started is easy.
+            </h2>
+          </div>
+
+          <div className="mt-10 grid gap-5 md:grid-cols-3">
+            {[
+              {
+                step: "1",
+                title: "Call or Book Online",
+                text: "Schedule your free inspection by phone or online. No obligation — just honest advice.",
+              },
+              {
+                step: "2",
+                title: "Free Home Inspection",
+                text: "We visit your home, assess insulation, identify drafts, and explain exactly what we find.",
+              },
+              {
+                step: "3",
+                title: "Get It Done Right",
+                text: "Our team completes the work professionally and helps you claim any available Energize CT rebates.",
+              },
+            ].map((item) => (
+              <div
+                key={item.step}
+                className="rounded-3xl border bg-stone-50 p-6 text-center shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+              >
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary text-2xl font-bold text-primary-foreground">
+                  {item.step}
+                </div>
+                <h3 className="mt-5 text-xl font-bold">{item.title}</h3>
+                <p className="mt-3 leading-7 text-muted-foreground">
+                  {item.text}
+                </p>
+              </div>
+            ))}
+          </div>
+        </Container>
+      </section>
+
+      {/* ─── CERTIFICATIONS ─── */}
       <section className="bg-white py-16 sm:py-24">
+        <Container>
+          <div className="mx-auto max-w-2xl text-center">
+            <p className="text-sm font-semibold uppercase tracking-wide text-primary">
+              Certifications & Partnerships
+            </p>
+            <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
+              Trusted, certified, and approved.
+            </h2>
+          </div>
+
+          {/* Certification image placeholders */}
+          <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
+            {[
+              "Owens Corning Certification",
+              "Energize CT Partner Badge",
+              "Google 5-Star Badge",
+              "License / Insurance Certificate",
+            ].map((cert) => (
+              <div
+                key={cert}
+                className="flex flex-col items-center gap-3 rounded-2xl border bg-stone-50 p-5 text-center shadow-sm"
+              >
+                <ImagePlaceholder
+                  label={cert}
+                  className="aspect-square w-full max-w-[100px]"
+                />
+                <p className="text-xs font-medium text-muted-foreground">
+                  {cert}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-8 rounded-[2rem] border bg-stone-50 p-6 sm:p-8">
+            <div className="grid gap-4 md:grid-cols-3">
+              {[
+                "Approved contractor for Eversource and United Illuminating",
+                "Top of the House certified Owens Corning contractor",
+                "Partners of the Energize CT Rebate Program",
+              ].map((item) => (
+                <div key={item} className="flex gap-3">
+                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                  <p className="font-medium">{item}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Container>
+      </section>
+
+      {/* ─── REVIEWS ─── */}
+      <section className="py-16 sm:py-24">
         <Container>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-sm font-semibold uppercase tracking-wide text-primary">
-                Homeowner Reviews
+                Google Reviews
               </p>
               <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-5xl">
-                Trusted by local homeowners.
+                100+ five-star reviews.
               </h2>
             </div>
 
@@ -228,7 +427,7 @@ export default function HomePage() {
               href="/book"
               className="inline-flex h-11 items-center justify-center rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
             >
-              Start Your Project
+              Book Your Free Estimate
             </Link>
           </div>
 
@@ -244,7 +443,7 @@ export default function HomePage() {
                   ))}
                 </div>
                 <p className="mt-5 leading-7 text-muted-foreground">
-                  “{review.quote}”
+                  &ldquo;{review.quote}&rdquo;
                 </p>
                 <p className="mt-5 font-bold">{review.name}</p>
                 <p className="text-sm text-muted-foreground">Google Review</p>
@@ -254,23 +453,80 @@ export default function HomePage() {
         </Container>
       </section>
 
+      {/* ─── AREAS SERVED ─── */}
+      <section id="areas" className="bg-white py-16 sm:py-24">
+        <Container>
+          <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-wide text-primary">
+                Service Area
+              </p>
+              <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-5xl">
+                Insulation available in Central Connecticut.
+              </h2>
+              <p className="mt-5 leading-8 text-muted-foreground">
+                Eco Energy Guard serves homeowners throughout Central CT,
+                helping families reduce energy costs and improve home comfort
+                year-round.
+              </p>
+              <Link
+                href="/areas"
+                className="mt-6 inline-flex items-center gap-1 text-sm font-semibold text-primary transition hover:gap-2"
+              >
+                See all service areas <ChevronRight className="h-4 w-4" />
+              </Link>
+            </div>
+
+            <div className="rounded-[2rem] border bg-stone-50 p-6 sm:p-8">
+              <div className="mb-4 flex items-center gap-2">
+                <MapPin className="h-5 w-5 text-primary" />
+                <h3 className="text-lg font-bold">Towns We Serve</h3>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {ctTowns.map((town) => (
+                  <span
+                    key={town}
+                    className="rounded-full border bg-white px-3 py-1 text-xs font-medium"
+                  >
+                    {town}
+                  </span>
+                ))}
+                <span className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                  + more
+                </span>
+              </div>
+            </div>
+          </div>
+        </Container>
+      </section>
+
+      {/* ─── FINAL CTA ─── */}
       <section className="bg-primary py-16 text-primary-foreground sm:py-24">
         <Container>
           <div className="mx-auto max-w-3xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-5xl">
-              Ready to make your home feel better?
+              Call or Book Now — Free Inspection.
             </h2>
             <p className="mt-5 text-lg opacity-90">
-              Start with an inspection request. The team will review your home,
-              explain the options, and recommend the right next step.
+              No pressure. No obligation. Just honest answers about your home's
+              insulation and energy efficiency.
             </p>
 
-            <Link
-              href="/book"
-              className="mt-8 inline-flex h-12 items-center justify-center rounded-full bg-white px-8 text-sm font-semibold text-primary shadow-sm transition hover:-translate-y-0.5 hover:bg-stone-100"
-            >
-              Request an Inspection
-            </Link>
+            <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
+              <Link
+                href="/book"
+                className="inline-flex h-12 items-center justify-center rounded-full bg-white px-8 text-sm font-semibold text-primary shadow-sm transition hover:-translate-y-0.5 hover:bg-stone-100"
+              >
+                Book Online — Free Estimate
+              </Link>
+              <a
+                href="tel:+18605550000"
+                className="inline-flex h-12 items-center justify-center rounded-full border border-white/30 px-8 text-sm font-semibold text-white transition hover:bg-white/10"
+              >
+                <Phone className="mr-2 h-4 w-4" />
+                (860) XXX-XXXX
+              </a>
+            </div>
           </div>
         </Container>
       </section>
