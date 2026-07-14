@@ -17,44 +17,35 @@ import {
 } from "lucide-react";
 import Container from "@/components/layout/Container";
 import ImagePlaceholder from "@/components/ui/image-placeholder";
+import {
+  FREE_INSPECTION_CTA,
+  PHONE_DISPLAY,
+  PHONE_HREF,
+  services as allServices,
+  towns,
+} from "@/lib/site-content";
 
-const services = [
-  {
-    id: "foam-air-sealing",
-    icon: ShieldCheck,
-    title: "Foam Air Sealing",
-    description:
-      "Stop drafts at the source with professional spray foam applied around penetrations, gaps, and common leakage points throughout your home.",
-  },
-  {
-    id: "blown-in-insulation",
-    icon: Sparkles,
-    title: "Blown-in Insulation",
-    description:
-      "Loose-fill insulation blown into attics and hard-to-reach spaces for complete, even coverage that dramatically improves comfort.",
-  },
-  {
-    id: "batt-insulation",
-    icon: Home,
-    title: "Batt Insulation",
-    description:
-      "Pre-cut fiberglass batts installed between framing members in walls, floors, and ceilings for reliable thermal performance.",
-  },
-  {
-    id: "dense-packed",
-    icon: ThermometerSun,
-    title: "Dense Packed",
-    description:
-      "High-density cellulose packed tightly into wall cavities to eliminate air movement and maximize insulation value.",
-  },
-  {
-    id: "dense-packed-garage-ceilings",
-    icon: Home,
-    title: "Dense Packed Garage Ceilings",
-    description:
-      "Insulate the ceiling above your attached garage to prevent cold floors and temperature extremes in rooms above.",
-  },
+const featuredServiceConfigs = [
+  { slug: "foam-air-sealing", icon: ShieldCheck },
+  { slug: "blown-in-fiberglass-insulation", icon: Sparkles },
+  { slug: "attic-insulation", icon: Home },
+  { slug: "basement-insulation", icon: Home },
+  { slug: "crawl-space-insulation", icon: ThermometerSun },
+  { slug: "garage-ceiling-insulation", icon: Zap },
 ];
+
+const services = featuredServiceConfigs
+  .map((config) => {
+    const service = allServices.find((item) => item.slug === config.slug);
+    if (!service) return null;
+    return {
+      id: service.slug,
+      icon: config.icon,
+      title: service.title,
+      description: service.shortDescription,
+    };
+  })
+  .filter((service): service is NonNullable<typeof service> => service !== null);
 
 const reviews = [
   {
@@ -72,29 +63,6 @@ const reviews = [
     quote:
       "Bill and his crew were amazing. Extremely knowledgeable, efficient, and easy to work with.",
   },
-];
-
-const ctTowns = [
-  "Hartford",
-  "West Hartford",
-  "Glastonbury",
-  "Wethersfield",
-  "Newington",
-  "Rocky Hill",
-  "New Britain",
-  "Berlin",
-  "Southington",
-  "Meriden",
-  "Wallingford",
-  "Cheshire",
-  "Middletown",
-  "Plainville",
-  "Bristol",
-  "Farmington",
-  "Avon",
-  "Simsbury",
-  "Bloomfield",
-  "East Hartford",
 ];
 
 export default function HomePage() {
@@ -116,14 +84,19 @@ export default function HomePage() {
               <br />
               <span className="text-primary">Better Comfort.</span>
             </h1>
+            <p className="mt-4 text-sm font-semibold uppercase tracking-wide text-primary">
+              Leader in Attic, Basement, and Conditioned Space
+            </p>
+            <p className="mt-1 text-xs font-semibold uppercase tracking-[0.25em] text-muted-foreground">
+              ABCs
+            </p>
 
             <p className="mt-6 max-w-xl text-base leading-7 text-muted-foreground sm:text-lg sm:leading-8">
-              Eco Energy Guard provides professional insulation and air sealing
-              throughout Central Connecticut.{" "}
-              <strong className="text-foreground">Free estimates</strong> — and
-              as an Energize CT partner, qualifying upgrades can save up to{" "}
-              <strong className="text-foreground">20% on energy bills</strong>{" "}
-              per year.
+              Upgrading your house with our insulation services is an investment
+              in year-round comfort and lower utility costs. As an Energize CT
+              partner, we help homeowners save up to{" "}
+              <strong className="text-foreground">20% on energy bills per year</strong>{" "}
+              with improvements designed for long-term value.
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -131,18 +104,21 @@ export default function HomePage() {
                 href="/book"
                 className="inline-flex h-12 items-center justify-center rounded-full bg-primary px-7 text-sm font-semibold text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-md"
               >
-                Book a Free Estimate
+                Book a Free Inspection
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
 
               <a
-                href="tel:+18605550000"
+                href={PHONE_HREF}
                 className="inline-flex h-12 items-center justify-center rounded-full border bg-white px-7 text-sm font-semibold transition hover:-translate-y-0.5 hover:bg-muted"
               >
                 <Phone className="mr-2 h-4 w-4" />
-                Call Now — Free Inspection
+                {PHONE_DISPLAY}
               </a>
             </div>
+            <p className="mt-4 text-sm font-semibold text-foreground">
+              {FREE_INSPECTION_CTA}
+            </p>
 
             <div className="mt-6 flex flex-wrap gap-2">
               {[
@@ -218,7 +194,7 @@ export default function HomePage() {
               Insulation solutions for every home.
             </h2>
             <p className="mt-4 text-muted-foreground">
-              Available throughout Central Connecticut. Free estimates on all
+              Available throughout Central Connecticut. Free inspections on all
               services.
             </p>
           </div>
@@ -244,7 +220,7 @@ export default function HomePage() {
                     {service.description}
                   </p>
                   <Link
-                    href={`/services#${service.id}`}
+                    href={`/services/${service.id}`}
                     className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-primary transition hover:gap-2"
                   >
                     Learn more <ChevronRight className="h-4 w-4" />
@@ -288,7 +264,7 @@ export default function HomePage() {
                   href="/book"
                   className="mt-8 inline-flex h-12 items-center justify-center rounded-full bg-white px-8 text-sm font-semibold text-emerald-800 shadow-sm transition hover:-translate-y-0.5 hover:bg-stone-100"
                 >
-                  Get a Free Estimate
+                  Get a Free Inspection
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </div>
@@ -298,7 +274,7 @@ export default function HomePage() {
                   { value: "20%", label: "Average energy savings per year" },
                   { value: "100+", label: "Five-star Google reviews" },
                   { value: "18+", label: "Years in business since 2008" },
-                  { value: "FREE", label: "Inspection & estimate, no obligation" },
+                  { value: "FREE", label: "Inspection, no obligation" },
                 ].map(({ value, label }) => (
                   <div key={label} className="rounded-2xl bg-white/10 p-5">
                     <p className="text-3xl font-bold">{value}</p>
@@ -376,7 +352,7 @@ export default function HomePage() {
               "Owens Corning Certification",
               "Energize CT Partner Badge",
               "Google 5-Star Badge",
-              "License / Insurance Certificate",
+              "RIMA International Badge",
             ].map((cert) => (
               <div
                 key={cert}
@@ -427,7 +403,7 @@ export default function HomePage() {
               href="/book"
               className="inline-flex h-11 items-center justify-center rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
             >
-              Book Your Free Estimate
+              Book Your Free Inspection
             </Link>
           </div>
 
@@ -483,12 +459,12 @@ export default function HomePage() {
                 <h3 className="text-lg font-bold">Towns We Serve</h3>
               </div>
               <div className="flex flex-wrap gap-2">
-                {ctTowns.map((town) => (
+                {towns.slice(0, 20).map((town) => (
                   <span
-                    key={town}
+                    key={town.slug}
                     className="rounded-full border bg-white px-3 py-1 text-xs font-medium"
                   >
-                    {town}
+                    {town.name}
                   </span>
                 ))}
                 <span className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
@@ -505,10 +481,10 @@ export default function HomePage() {
         <Container>
           <div className="mx-auto max-w-3xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-5xl">
-              Call or Book Now — Free Inspection.
+              Call, email or book online for a free inspection.
             </h2>
             <p className="mt-5 text-lg opacity-90">
-              No pressure. No obligation. Just honest answers about your home's
+              No pressure. No obligation. Just honest answers about your home&apos;s
               insulation and energy efficiency.
             </p>
 
@@ -517,14 +493,14 @@ export default function HomePage() {
                 href="/book"
                 className="inline-flex h-12 items-center justify-center rounded-full bg-white px-8 text-sm font-semibold text-primary shadow-sm transition hover:-translate-y-0.5 hover:bg-stone-100"
               >
-                Book Online — Free Estimate
+                Book Online — Free Inspection
               </Link>
               <a
-                href="tel:+18605550000"
+                href={PHONE_HREF}
                 className="inline-flex h-12 items-center justify-center rounded-full border border-white/30 px-8 text-sm font-semibold text-white transition hover:bg-white/10"
               >
                 <Phone className="mr-2 h-4 w-4" />
-                (860) XXX-XXXX
+                {PHONE_DISPLAY}
               </a>
             </div>
           </div>

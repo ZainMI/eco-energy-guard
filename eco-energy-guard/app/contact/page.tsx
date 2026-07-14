@@ -1,6 +1,11 @@
 import Link from "next/link";
 import { Clock, Mail, MapPin, Phone } from "lucide-react";
 import Container from "@/components/layout/Container";
+import {
+  FREE_INSPECTION_CTA,
+  HOURS_DISPLAY,
+  PHONE_DISPLAY,
+} from "@/lib/site-content";
 
 export default function ContactPage() {
   return (
@@ -18,6 +23,9 @@ export default function ContactPage() {
               Reach out to Eco Energy Guard to ask about inspections,
               insulation, air sealing, or next steps for your home.
             </p>
+            <p className="mt-4 font-semibold text-foreground">
+              {FREE_INSPECTION_CTA}
+            </p>
           </div>
         </Container>
       </section>
@@ -29,7 +37,7 @@ export default function ContactPage() {
               <div className="rounded-3xl border bg-white p-6 shadow-sm">
                 <Phone className="h-6 w-6 text-primary" />
                 <h2 className="mt-4 text-xl font-bold">Phone</h2>
-                <p className="mt-2 text-muted-foreground">(518) XXX-XXXX</p>
+                <p className="mt-2 text-muted-foreground">{PHONE_DISPLAY}</p>
               </div>
 
               <div className="rounded-3xl border bg-white p-6 shadow-sm">
@@ -44,16 +52,14 @@ export default function ContactPage() {
                 <MapPin className="h-6 w-6 text-primary" />
                 <h2 className="mt-4 text-xl font-bold">Service Area</h2>
                 <p className="mt-2 text-muted-foreground">
-                  Serving homeowners throughout New York’s Capital Region.
+                  Serving Central Connecticut towns.
                 </p>
               </div>
 
               <div className="rounded-3xl border bg-white p-6 shadow-sm">
                 <Clock className="h-6 w-6 text-primary" />
                 <h2 className="mt-4 text-xl font-bold">Hours</h2>
-                <p className="mt-2 text-muted-foreground">
-                  Open daily, 7:00 AM – 7:00 PM
-                </p>
+                <p className="mt-2 text-muted-foreground">{HOURS_DISPLAY}</p>
               </div>
             </div>
 
@@ -95,7 +101,7 @@ export default function ContactPage() {
                   <input
                     type="tel"
                     className="mt-2 h-12 w-full rounded-xl border bg-background px-4 outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/10"
-                    placeholder="(518) 555-0123"
+                    placeholder="1 (860)-690-5465"
                   />
                 </div>
 

@@ -51,7 +51,7 @@ export default function AboutPage() {
               </p>
 
               <h1 className="mt-4 text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
-                Central Connecticut's trusted insulation experts since 2008.
+                Central Connecticut&apos;s trusted insulation experts since 2008.
               </h1>
 
               <p className="mt-6 text-base leading-8 text-muted-foreground sm:text-lg">
@@ -142,7 +142,7 @@ export default function AboutPage() {
               "Owens Corning Certification",
               "Energize CT Partner Badge",
               "Eversource / UI Approved",
-              "License / Insurance Certificate",
+              "RIMA International Badge",
             ].map((cert) => (
               <div
                 key={cert}
@@ -191,7 +191,7 @@ export default function AboutPage() {
 
               <p className="mt-6 leading-8 text-muted-foreground">
                 We believe homeowners deserve clear answers — not confusing
-                technical jargon or pressure to purchase services they don't
+                technical jargon or pressure to purchase services they don&apos;t
                 need. Every project begins with a professional free inspection
                 and straightforward recommendations.
               </p>
@@ -236,9 +236,9 @@ export default function AboutPage() {
             </h2>
 
             <p className="mx-auto mt-6 max-w-2xl text-lg opacity-90">
-              Whether you're experiencing drafts, inconsistent temperatures,
+            Whether you&apos;re experiencing drafts, inconsistent temperatures,
               rising energy costs, or simply want to make your home more
-              efficient — we're here to help. Free estimates, honest advice,
+              efficient — we&apos;re here to help. Free inspections, honest advice,
               18+ years of experience.
             </p>
 
@@ -261,6 +261,33 @@ export default function AboutPage() {
           </div>
         </Container>
       </section>
+
+      <section className="bg-stone-50 py-16 sm:py-24">
+        <Container>
+          <div className="mx-auto max-w-4xl rounded-[2rem] border bg-white p-8 shadow-sm sm:p-10">
+            <p className="text-sm font-semibold uppercase tracking-wide text-primary">
+              About the Owner
+            </p>
+            <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
+              William Brown
+            </h2>
+            <div className="mt-6 space-y-4 leading-8 text-muted-foreground">
+              <p>
+                William Brown holds a Bachelors of Science in Landscape
+                Architecture from UMass, Amherst Mass. He spent much of his life
+                in fine home construction and understands the science of how a
+                home works, the engineering of materials, and how they work
+                together.
+              </p>
+              <p>
+                He lived ten years in South East Asia building golf courses for
+                many well-known Golf Architects. He is an expert in reflective
+                insulation and other energy-efficient products in Connecticut.
+              </p>
+            </div>
+          </div>
+        </Container>
+      </section>
     </>
   );
-}
+}

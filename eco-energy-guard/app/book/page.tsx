@@ -18,6 +18,7 @@ import Container from "@/components/layout/Container";
 import { createClient } from "@/lib/supabase/client";
 import AddressAutocomplete from "@/components/forms/AddressAutocomplete";
 import { distanceMiles } from "@/lib/location";
+import { PHONE_DISPLAY } from "@/lib/site-content";
 
 type Slot = {
   id: string;
@@ -25,9 +26,9 @@ type Slot = {
   ends_at: string;
 };
 
-// Service area constants - adjust as needed
-const SERVICE_CENTER_LAT = 42.6526; // Example: Albany, NY
-const SERVICE_CENTER_LNG = -73.7562;
+// Service area constants - centered on Hartford, CT
+const SERVICE_CENTER_LAT = 41.7658;
+const SERVICE_CENTER_LNG = -72.6734;
 const SERVICE_RADIUS_MILES = 50;
 
 export default function BookPage() {
@@ -595,7 +596,7 @@ export default function BookPage() {
                 <div className="mt-5 space-y-3 text-sm">
                   <p className="flex items-center gap-3">
                     <Phone className="h-4 w-4 text-primary" />
-                    (518) XXX-XXXX
+                    {PHONE_DISPLAY}
                   </p>
                   <p className="flex items-center gap-3">
                     <Mail className="h-4 w-4 text-primary" />
