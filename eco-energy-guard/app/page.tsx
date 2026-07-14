@@ -446,10 +446,10 @@ export default function HomePage() {
                 year-round.
               </p>
               <Link
-                href="/areas"
+                href="/locations"
                 className="mt-6 inline-flex items-center gap-1 text-sm font-semibold text-primary transition hover:gap-2"
               >
-                See all service areas <ChevronRight className="h-4 w-4" />
+                See all locations <ChevronRight className="h-4 w-4" />
               </Link>
             </div>
 

@@ -326,40 +326,206 @@ export const services: Service[] = [
 export type Town = {
   slug: string;
   name: string;
+  description: string;
 };
 
 export const towns: Town[] = [
-  { slug: "hartford", name: "Hartford" },
-  { slug: "west-hartford", name: "West Hartford" },
-  { slug: "east-hartford", name: "East Hartford" },
-  { slug: "new-britain", name: "New Britain" },
-  { slug: "bristol", name: "Bristol" },
-  { slug: "newington", name: "Newington" },
-  { slug: "wethersfield", name: "Wethersfield" },
-  { slug: "rocky-hill", name: "Rocky Hill" },
-  { slug: "glastonbury", name: "Glastonbury" },
-  { slug: "bloomfield", name: "Bloomfield" },
-  { slug: "farmington", name: "Farmington" },
-  { slug: "avon", name: "Avon" },
-  { slug: "simsbury", name: "Simsbury" },
-  { slug: "plainville", name: "Plainville" },
-  { slug: "berlin", name: "Berlin" },
-  { slug: "southington", name: "Southington" },
-  { slug: "canton", name: "Canton" },
-  { slug: "burlington", name: "Burlington" },
-  { slug: "enfield", name: "Enfield" },
-  { slug: "windsor", name: "Windsor" },
-  { slug: "middletown", name: "Middletown" },
-  { slug: "meriden", name: "Meriden" },
-  { slug: "wallingford", name: "Wallingford" },
-  { slug: "cromwell", name: "Cromwell" },
-  { slug: "portland", name: "Portland" },
-  { slug: "east-hampton", name: "East Hampton" },
-  { slug: "haddam", name: "Haddam" },
-  { slug: "durham", name: "Durham" },
-  { slug: "middlefield", name: "Middlefield" },
-  { slug: "chester", name: "Chester" },
-  { slug: "litchfield", name: "Litchfield" },
-  { slug: "torrington", name: "Torrington" },
-  { slug: "harwinton", name: "Harwinton" },
+  {
+    slug: "hartford",
+    name: "Hartford",
+    description:
+      "Energy-efficient insulation upgrades for Hartford homes, from older properties to modern renovations.",
+  },
+  {
+    slug: "west-hartford",
+    name: "West Hartford",
+    description:
+      "Comfort-focused insulation and air sealing for West Hartford homes with year-round performance in mind.",
+  },
+  {
+    slug: "east-hartford",
+    name: "East Hartford",
+    description:
+      "Simple, effective insulation solutions for East Hartford homeowners looking to lower utility costs.",
+  },
+  {
+    slug: "new-britain",
+    name: "New Britain",
+    description:
+      "Attic, basement, and whole-home insulation services for New Britain families and properties.",
+  },
+  {
+    slug: "bristol",
+    name: "Bristol",
+    description:
+      "Bristol insulation projects designed to reduce drafts and improve indoor comfort in every season.",
+  },
+  {
+    slug: "newington",
+    name: "Newington",
+    description:
+      "Reliable insulation and ventilation improvements for homes across Newington neighborhoods.",
+  },
+  {
+    slug: "wethersfield",
+    name: "Wethersfield",
+    description:
+      "Home-performance insulation work in Wethersfield focused on comfort, efficiency, and long-term value.",
+  },
+  {
+    slug: "rocky-hill",
+    name: "Rocky Hill",
+    description:
+      "Rocky Hill homeowners can count on straightforward insulation upgrades and honest recommendations.",
+  },
+  {
+    slug: "glastonbury",
+    name: "Glastonbury",
+    description:
+      "Targeted insulation and air sealing services for Glastonbury homes with uneven temperatures.",
+  },
+  {
+    slug: "bloomfield",
+    name: "Bloomfield",
+    description:
+      "Bloomfield insulation services that help stabilize indoor temperatures and reduce wasted energy.",
+  },
+  {
+    slug: "farmington",
+    name: "Farmington",
+    description:
+      "Farmington area insulation upgrades for attics, basements, crawl spaces, and more.",
+  },
+  {
+    slug: "avon",
+    name: "Avon",
+    description:
+      "Insulation services in Avon built around cleaner installs, better comfort, and practical energy savings.",
+  },
+  {
+    slug: "simsbury",
+    name: "Simsbury",
+    description:
+      "Simsbury home insulation improvements that make heating and cooling systems work less.",
+  },
+  {
+    slug: "plainville",
+    name: "Plainville",
+    description:
+      "Plainville homeowners get simple, proven insulation options tailored to their home layout.",
+  },
+  {
+    slug: "berlin",
+    name: "Berlin",
+    description:
+      "Insulation and energy-efficiency upgrades for Berlin homes, including attic and rim joist work.",
+  },
+  {
+    slug: "southington",
+    name: "Southington",
+    description:
+      "Southington insulation services focused on reducing drafts and improving whole-home comfort.",
+  },
+  {
+    slug: "canton",
+    name: "Canton",
+    description:
+      "Professional insulation upgrades in Canton for better comfort and more predictable utility bills.",
+  },
+  {
+    slug: "burlington",
+    name: "Burlington",
+    description:
+      "Burlington homes benefit from practical insulation recommendations based on actual performance needs.",
+  },
+  {
+    slug: "enfield",
+    name: "Enfield",
+    description:
+      "Enfield insulation services that improve thermal control in attics, walls, and lower levels.",
+  },
+  {
+    slug: "windsor",
+    name: "Windsor",
+    description:
+      "Windsor homeowners can improve comfort quickly with simple insulation and air-sealing projects.",
+  },
+  {
+    slug: "middletown",
+    name: "Middletown",
+    description:
+      "Middletown insulation solutions to help homes stay warmer in winter and cooler in summer.",
+  },
+  {
+    slug: "meriden",
+    name: "Meriden",
+    description:
+      "Meriden home insulation and ventilation services designed for reliable energy performance.",
+  },
+  {
+    slug: "wallingford",
+    name: "Wallingford",
+    description:
+      "Wallingford insulation upgrades that target common energy-loss areas for measurable comfort gains.",
+  },
+  {
+    slug: "cromwell",
+    name: "Cromwell",
+    description:
+      "Cromwell insulation services for homeowners who want straightforward upgrades without extra complexity.",
+  },
+  {
+    slug: "portland",
+    name: "Portland",
+    description:
+      "Portland homes can benefit from focused attic and basement insulation improvements.",
+  },
+  {
+    slug: "east-hampton",
+    name: "East Hampton",
+    description:
+      "East Hampton insulation projects centered on reducing heat loss and improving indoor comfort.",
+  },
+  {
+    slug: "haddam",
+    name: "Haddam",
+    description:
+      "Haddam homeowners get insulation and sealing options that fit both newer and older homes.",
+  },
+  {
+    slug: "durham",
+    name: "Durham",
+    description:
+      "Durham insulation services to help maintain comfortable temperatures throughout the year.",
+  },
+  {
+    slug: "middlefield",
+    name: "Middlefield",
+    description:
+      "Middlefield insulation work that supports better HVAC efficiency and cleaner indoor comfort.",
+  },
+  {
+    slug: "chester",
+    name: "Chester",
+    description:
+      "Chester home insulation solutions built around practical upgrades with clear homeowner value.",
+  },
+  {
+    slug: "litchfield",
+    name: "Litchfield",
+    description:
+      "Insulation and air-sealing services in Litchfield for improved comfort and reduced energy waste.",
+  },
+  {
+    slug: "torrington",
+    name: "Torrington",
+    description:
+      "Torrington insulation projects that address attic, crawl space, and basement performance gaps.",
+  },
+  {
+    slug: "harwinton",
+    name: "Harwinton",
+    description:
+      "Harwinton homeowners can get simple insulation upgrades with no-pressure guidance and support.",
+  },
 ];

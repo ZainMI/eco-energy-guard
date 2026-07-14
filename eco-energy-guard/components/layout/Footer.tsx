@@ -42,7 +42,7 @@ export default function Footer() {
               <Link href="/about" className="hover:text-foreground transition">About</Link>
               <Link href="/services" className="hover:text-foreground transition">Services</Link>
               <Link href="/gallery" className="hover:text-foreground transition">Gallery</Link>
-              <Link href="/areas" className="hover:text-foreground transition">Areas Served</Link>
+              <Link href="/locations" className="hover:text-foreground transition">Locations</Link>
               <Link href="/contact" className="hover:text-foreground transition">Contact</Link>
             </div>
           </div>

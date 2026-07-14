@@ -21,7 +21,7 @@ const navLinks = [
   { href: "/", label: "Home" },
   { href: "/about", label: "About" },
   { href: "/gallery", label: "Gallery" },
-  { href: "/areas", label: "Areas Served" },
+  { href: "/locations", label: "Locations" },
   { href: "/contact", label: "Contact" },
 ];
 
