@@ -5,14 +5,17 @@ import Link from "next/link";
 import { ChevronDown, Menu } from "lucide-react";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  PHONE_DISPLAY,
+  PHONE_HREF,
+  services,
+  SITE_TITLE_PHRASE,
+} from "@/lib/site-content";
 
-const serviceLinks = [
-  { href: "/services#foam-air-sealing", label: "Foam Air Sealing" },
-  { href: "/services#blown-in-insulation", label: "Blown-in Insulation" },
-  { href: "/services#batt-insulation", label: "Batt Insulation" },
-  { href: "/services#dense-packed", label: "Dense Packed" },
-  { href: "/services#dense-packed-garage-ceilings", label: "Dense Packed Garage Ceilings" },
-];
+const serviceLinks = services.map((service) => ({
+  href: `/services/${service.slug}`,
+  label: service.title,
+}));
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -44,7 +47,7 @@ export default function Navbar() {
               Eco Energy Guard
             </p>
             <p className="hidden truncate text-xs text-muted-foreground sm:block">
-              Central Connecticut Insulation
+              {SITE_TITLE_PHRASE}
             </p>
           </div>
         </Link>
@@ -68,7 +71,7 @@ export default function Navbar() {
               <ChevronDown className="h-3.5 w-3.5 transition-transform duration-200 group-hover:rotate-180" />
             </button>
 
-            <div className="invisible absolute left-1/2 top-full mt-3 w-56 -translate-x-1/2 rounded-2xl border bg-white p-2 shadow-xl opacity-0 transition-all duration-150 group-hover:visible group-hover:opacity-100">
+            <div className="invisible absolute left-1/2 top-full mt-3 max-h-[22rem] w-72 -translate-x-1/2 overflow-y-auto rounded-2xl border bg-white p-2 shadow-xl opacity-0 transition-all duration-150 group-hover:visible group-hover:opacity-100">
               {/* Arrow */}
               <div className="absolute -top-1.5 left-1/2 h-3 w-3 -translate-x-1/2 rotate-45 border-l border-t bg-white" />
               {serviceLinks.map((svc) => (
@@ -97,7 +100,7 @@ export default function Navbar() {
           href="/book"
           className="hidden h-10 items-center justify-center rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-md lg:inline-flex"
         >
-          Free Estimate
+          Free Inspection
         </Link>
 
         {/* Mobile menu */}
@@ -122,7 +125,7 @@ export default function Navbar() {
                 <div>
                   <p className="font-bold">Eco Energy Guard</p>
                   <p className="text-xs text-muted-foreground">
-                    Central CT Insulation
+                    {SITE_TITLE_PHRASE}
                   </p>
                 </div>
               </div>
@@ -181,14 +184,14 @@ export default function Navbar() {
                   onClick={() => setOpen(false)}
                   className="mt-4 inline-flex h-14 items-center justify-center rounded-full bg-primary px-5 text-base font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90"
                 >
-                  Book Free Estimate
+                  Book Free Inspection
                 </Link>
 
                 <a
-                  href="tel:+18605550000"
+                  href={PHONE_HREF}
                   className="inline-flex h-12 items-center justify-center rounded-full border px-5 text-sm font-semibold transition hover:bg-muted"
                 >
-                  (860) XXX-XXXX — Call Now
+                  {PHONE_DISPLAY} — Call Now
                 </a>
               </div>
             </SheetContent>

@@ -3,11 +3,15 @@ import "./globals.css";
 
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import { SITE_TITLE_PHRASE } from "@/lib/site-content";
 
 import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
-  title: "Eco Energy Guard",
+  title: {
+    default: `Eco Energy Guard | ${SITE_TITLE_PHRASE}`,
+    template: `%s | ${SITE_TITLE_PHRASE}`,
+  },
   description: "Professional home energy solutions.",
 };
 

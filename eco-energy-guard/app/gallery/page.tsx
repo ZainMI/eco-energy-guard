@@ -21,7 +21,7 @@ export default function GalleryPage() {
 
             <p className="mt-6 text-base leading-7 text-muted-foreground sm:text-lg sm:leading-8">
               Browse examples of insulation, air sealing, and energy-efficiency
-              work completed for homeowners throughout the Capital Region.
+              work completed for homeowners throughout Central Connecticut.
             </p>
           </div>
         </Container>
@@ -56,7 +56,7 @@ export default function GalleryPage() {
             </h2>
 
             <p className="mt-5 text-lg opacity-90">
-              Start with a home energy inspection and we'll help determine the
+              Start with a home energy inspection and we&apos;ll help determine the
               best upgrades for your home.
             </p>
 
