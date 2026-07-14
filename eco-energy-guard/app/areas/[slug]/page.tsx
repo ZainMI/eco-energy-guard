@@ -17,12 +17,13 @@ export function generateStaticParams() {
   return towns.map((town) => ({ slug: town.slug }));
 }
 
-export function generateMetadata({
+export async function generateMetadata({
   params,
 }: {
-  params: Params;
-}): Metadata {
-  const town = getTown(params.slug);
+  params: Promise<Params>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const town = getTown(slug);
   if (!town) {
     return { title: "Town Not Found" };
   }
@@ -33,8 +34,13 @@ export function generateMetadata({
   };
 }
 
-export default function TownDetailPage({ params }: { params: Params }) {
-  const town = getTown(params.slug);
+export default async function TownDetailPage({
+  params,
+}: {
+  params: Promise<Params>;
+}) {
+  const { slug } = await params;
+  const town = getTown(slug);
 
   if (!town) {
     notFound();
