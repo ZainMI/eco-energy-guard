@@ -1,0 +1,14 @@
+{
+  "title": "Blown-in Fiberglass Insulation",
+  "city": "Central Connecticut",
+  "state": "CT",
+  "description": "For this project, we insulated the attic to reduce heat transfer through the ceiling, helping improve the home's energy efficiency and indoor comfort.",
+  "services": ["Blown-in Fiberglass Insulation"],
+  "improvements": [
+    "Improved comfort",
+    "Reduced energy consumption",
+    "Better insulation performance"
+  ],
+  "featured": true,
+  "imageFit": "contain"
+}

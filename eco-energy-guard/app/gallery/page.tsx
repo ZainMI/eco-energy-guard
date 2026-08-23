@@ -34,7 +34,7 @@ export default function GalleryPage() {
               <h2 className="text-2xl font-bold">No gallery projects yet</h2>
 
               <p className="mt-3 text-muted-foreground">
-                Add project folders inside <code>public/images</code> containing
+                Add project folders inside <code>public/images/Gallery</code> containing
                 before/after images and a project.json file.
               </p>
             </div>

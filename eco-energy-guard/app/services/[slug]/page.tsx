@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowLeft, ArrowRight, Home, Leaf, PiggyBank } from "lucide-react";
 import { notFound } from "next/navigation";
 import Container from "@/components/layout/Container";
@@ -9,6 +10,7 @@ import {
   services,
   type Service,
 } from "@/lib/site-content";
+import { getServiceImage } from "@/lib/service-images";
 
 type Params = {
   slug: string;
@@ -51,6 +53,8 @@ export default async function ServiceDetailPage({
     notFound();
   }
 
+  const image = getServiceImage(service.slug);
+
   return (
     <>
       <section className="bg-gradient-to-br from-stone-50 via-amber-50 to-emerald-50 py-16 sm:py-24">
@@ -62,12 +66,28 @@ export default async function ServiceDetailPage({
             <ArrowLeft className="h-4 w-4" />
             Back to All Services
           </Link>
-          <h1 className="mt-5 text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
-            {service.title}
-          </h1>
-          <p className="mt-6 max-w-3xl text-base leading-8 text-muted-foreground sm:text-lg">
-            {service.overview}
-          </p>
+          <div className={`mt-5 grid items-center gap-10 ${image ? "lg:grid-cols-2" : ""}`}>
+            <div>
+              <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
+                {service.title}
+              </h1>
+              <p className="mt-6 max-w-3xl text-base leading-8 text-muted-foreground sm:text-lg">
+                {service.overview}
+              </p>
+            </div>
+            {image && (
+              <div className="relative aspect-[4/3] overflow-hidden rounded-[2rem] bg-stone-100 shadow-lg">
+                <Image
+                  src={image}
+                  alt={`${service.title} installation`}
+                  fill
+                  priority
+                  className="object-cover"
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                />
+              </div>
+            )}
+          </div>
         </Container>
       </section>
 

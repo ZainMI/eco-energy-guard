@@ -100,7 +100,7 @@ export default function Navbar() {
           href="/book"
           className="hidden h-10 items-center justify-center rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-md lg:inline-flex"
         >
-          Free Inspection
+          Book Free Inspection
         </Link>
 
         {/* Mobile menu */}

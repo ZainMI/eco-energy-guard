@@ -16,17 +16,19 @@ export interface GalleryProject {
 }
 
 function findImage(folderPath: string, slug: string, name: "before" | "after") {
-  const extensions = ["png", "jpg", "jpeg", "webp"];
+  const fileName = fs.readdirSync(folderPath).find((file) => {
+    const parsed = path.parse(file);
+    return (
+      parsed.name.toLowerCase() === name &&
+      [".png", ".jpg", ".jpeg", ".webp"].includes(parsed.ext.toLowerCase())
+    );
+  });
 
-  const extension = extensions.find((ext) =>
-    fs.existsSync(path.join(folderPath, `${name}.${ext}`)),
-  );
-
-  return extension ? `/images/${slug}/${name}.${extension}` : "";
+  return fileName ? `/images/Gallery/${slug}/${fileName}` : "";
 }
 
 export function getGalleryProjects(): GalleryProject[] {
-  const galleryDir = path.join(process.cwd(), "public", "images");
+  const galleryDir = path.join(process.cwd(), "public", "images", "Gallery");
 
   if (!fs.existsSync(galleryDir)) {
     return [];

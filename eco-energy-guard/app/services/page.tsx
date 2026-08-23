@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   ArrowRight,
   Home,
@@ -15,6 +16,7 @@ import type { LucideIcon } from "lucide-react";
 import Container from "@/components/layout/Container";
 import ImagePlaceholder from "@/components/ui/image-placeholder";
 import { PHONE_DISPLAY, PHONE_HREF, services } from "@/lib/site-content";
+import { getServiceImage } from "@/lib/service-images";
 
 const iconMap: Record<string, LucideIcon> = {
   "foam-air-sealing": ShieldCheck,
@@ -57,7 +59,7 @@ export default function ServicesPage() {
                 href="/book"
                 className="inline-flex h-12 items-center justify-center rounded-full bg-primary px-7 text-sm font-semibold text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-md"
               >
-                Get a Free Inspection
+                Book Free Inspection
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
               <a
@@ -77,6 +79,7 @@ export default function ServicesPage() {
             {services.map((service, index) => {
               const Icon = iconMap[service.slug];
               const isEven = index % 2 === 0;
+              const image = getServiceImage(service.slug);
 
               return (
                 <div
@@ -87,10 +90,22 @@ export default function ServicesPage() {
                     className={`grid gap-0 lg:grid-cols-2 ${isEven ? "" : "lg:grid-flow-dense"}`}
                   >
                     <div className={`${isEven ? "" : "lg:col-start-2"}`}>
-                      <ImagePlaceholder
-                        label={`${service.title} — add photo here`}
-                        className="aspect-video h-full min-h-[220px] w-full rounded-none lg:rounded-none"
-                      />
+                      {image ? (
+                        <div className="relative aspect-video h-full min-h-[220px] w-full overflow-hidden bg-stone-100">
+                          <Image
+                            src={image}
+                            alt={`${service.title} installation`}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 1024px) 100vw, 50vw"
+                          />
+                        </div>
+                      ) : (
+                        <ImagePlaceholder
+                          label={`${service.title} — photo coming soon`}
+                          className="aspect-video h-full min-h-[220px] w-full rounded-none lg:rounded-none"
+                        />
+                      )}
                     </div>
 
                     <div className="p-7 sm:p-10">
