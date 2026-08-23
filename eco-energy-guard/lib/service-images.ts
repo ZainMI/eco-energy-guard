@@ -3,14 +3,15 @@
  * Services without a matching photo intentionally keep their existing placeholder.
  */
 export const serviceImages: Record<string, string> = {
-  "foam-air-sealing": "/images/Services/Rim Joist Foam Sealing.jpg",
+  "foam-air-sealing": "/images/Services/Foam Air Sealing.JPEG",
   "blown-in-fiberglass-insulation": "/images/Services/Blown-in Insulation.webp",
   "batt-insulation": "/images/Services/Batt Insulation.webp",
   "garage-ceiling-insulation": "/images/Services/Cieling Insulation.JPEG",
-  "solar-attic-fans": "/images/Services/Solar Attic Fans.webp",
+  "insulation-removal": "/images/Services/Wall Insulation.JPEG",
+  "solar-attic-fans": "/images/Services/Solar Attic Fan.png",
   "crawl-space-insulation": "/images/Services/Crawl Space.webp",
   "attic-insulation": "/images/Services/Attic Insulation.webp",
-  "basement-insulation": "/images/Services/Wall Insulation.JPEG",
+  "basement-insulation": "/images/Services/Basement Insulation.webp",
   "duct-insulation": "/images/Services/Duct Insulation.webp",
   "pipe-insulation": "/images/Services/Pipe Insulation.png",
   "passive-attic-ventilation": "/images/Services/Passive Attic Ventilation.jpg",

@@ -8,6 +8,7 @@ type BeforeAfterSliderProps = {
   after: string;
   title: string;
   imageFit?: "cover" | "contain";
+  expanded?: boolean;
 };
 
 export default function BeforeAfterSlider({
@@ -15,6 +16,7 @@ export default function BeforeAfterSlider({
   after,
   title,
   imageFit = "cover",
+  expanded = false,
 }: BeforeAfterSliderProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [position, setPosition] = useState(50);
@@ -37,7 +39,11 @@ export default function BeforeAfterSlider({
   return (
     <div
       ref={containerRef}
-      className="group relative aspect-[4/3] sm:aspect-[5/3] lg:aspect-[16/9] select-none overflow-hidden bg-stone-100"
+      className={`group relative select-none overflow-hidden rounded-xl bg-stone-100 ${
+        expanded
+          ? "h-[65vh] min-h-[320px] max-h-[760px]"
+          : "aspect-[4/3] sm:aspect-[5/3] lg:aspect-[16/9]"
+      }`}
       onPointerDown={(event) => {
         setIsDragging(true);
         updatePosition(event.clientX);

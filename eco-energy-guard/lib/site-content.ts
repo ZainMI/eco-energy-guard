@@ -71,35 +71,35 @@ export const services: Service[] = [
   },
   {
     slug: "garage-ceiling-insulation",
-    title: "Garage Ceiling Insulation",
+    title: "Ceiling Insulation",
     shortDescription:
-      "Insulate the garage ceiling to protect living spaces above from temperature swings.",
+      "Insulate ceilings to protect living spaces from temperature swings and unwanted heat transfer.",
     overview:
-      "Garage ceiling insulation improves the thermal boundary between attached garages and conditioned rooms overhead.",
+      "Ceiling insulation improves the thermal boundary between conditioned rooms and the spaces above or below them.",
     homeBenefit:
-      "Floors above garages stay warmer in winter and more comfortable throughout the year.",
+      "Rooms stay more comfortable throughout the year with fewer hot and cold surfaces.",
     energySavings:
-      "Reducing heat loss through the garage assembly lowers HVAC runtime for adjacent living spaces.",
+      "Reducing heat transfer through ceiling assemblies lowers HVAC runtime for adjacent living spaces.",
     highlights: [
-      "Targets rooms over attached garages",
-      "Improves comfort on upper levels",
+      "Targets under-insulated ceiling assemblies",
+      "Improves comfort in adjacent rooms",
       "Works with existing ceiling assemblies",
       "Can be combined with air sealing",
     ],
   },
   {
     slug: "insulation-removal",
-    title: "Insulation Removal",
+    title: "Wall Insulation Removal",
     shortDescription:
-      "Safely remove damaged, contaminated, or underperforming insulation before upgrading.",
+      "Safely remove damaged, contaminated, or underperforming wall insulation before upgrading.",
     overview:
-      "Insulation removal clears old material when moisture, pests, odor, or degraded performance prevents effective retrofits.",
+      "Wall insulation removal clears old material when moisture, pests, odor, or degraded performance prevents an effective retrofit.",
     homeBenefit:
-      "A clean attic or crawlspace prepares your home for durable, high-performing insulation installation.",
+      "Clean wall cavities prepare your home for durable, high-performing insulation installation.",
     energySavings:
       "Starting with clean, properly installed insulation helps ensure your upgrade delivers maximum efficiency gains.",
     highlights: [
-      "Removal of compromised attic insulation",
+      "Removal of compromised wall insulation",
       "Preparation for full retrofit projects",
       "Cleaner substrate for air sealing",
       "Better long-term insulation performance",

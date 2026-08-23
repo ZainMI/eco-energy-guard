@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   ArrowRight,
   Award,
@@ -10,6 +11,7 @@ import {
 } from "lucide-react";
 import Container from "@/components/layout/Container";
 import ImagePlaceholder from "@/components/ui/image-placeholder";
+import { certificationImages } from "@/lib/certification-images";
 
 const values = [
   {
@@ -136,24 +138,23 @@ export default function AboutPage() {
             </h2>
           </div>
 
-          {/* Certification image placeholders */}
           <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
-            {[
-              "Owens Corning Certification",
-              "Energize CT Partner Badge",
-              "Eversource / UI Approved",
-              "RIMA International Badge",
-            ].map((cert) => (
+            {certificationImages.map((cert) => (
               <div
-                key={cert}
+                key={cert.name}
                 className="flex flex-col items-center gap-3 rounded-2xl border bg-stone-50 p-5 text-center shadow-sm"
               >
-                <ImagePlaceholder
-                  label={cert}
-                  className="aspect-square w-full max-w-[100px]"
-                />
+                <div className="relative h-24 w-full sm:h-28">
+                  <Image
+                    src={cert.src}
+                    alt={cert.name}
+                    fill
+                    className="object-contain"
+                    sizes="(max-width: 640px) 50vw, 25vw"
+                  />
+                </div>
                 <p className="text-xs font-semibold text-muted-foreground">
-                  {cert}
+                  {cert.name}
                 </p>
               </div>
             ))}

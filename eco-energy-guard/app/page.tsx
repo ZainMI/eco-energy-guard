@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   ArrowRight,
   BadgeCheck,
@@ -16,7 +17,8 @@ import {
   Zap,
 } from "lucide-react";
 import Container from "@/components/layout/Container";
-import ImagePlaceholder from "@/components/ui/image-placeholder";
+import { certificationImages } from "@/lib/certification-images";
+import { getServiceImage } from "@/lib/service-images";
 import {
   FREE_INSPECTION_CTA,
   PHONE_DISPLAY,
@@ -43,6 +45,7 @@ const services = featuredServiceConfigs
       icon: config.icon,
       title: service.title,
       description: service.shortDescription,
+      image: getServiceImage(service.slug),
     };
   })
   .filter((service): service is NonNullable<typeof service> => service !== null);
@@ -138,10 +141,16 @@ export default function HomePage() {
 
           {/* Right: hero image */}
           <div className="relative">
-            <ImagePlaceholder
-              label="Hero image — e.g. insulation installation or crew at work"
-              className="aspect-[4/3] w-full rounded-[2rem] shadow-2xl"
-            />
+            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[2rem] bg-stone-100 shadow-2xl">
+              <Image
+                src="/images/Hero Image.webp"
+                alt="Eco Energy Guard insulation installation"
+                fill
+                priority
+                className="object-cover"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+              />
+            </div>
             {/* Floating review badge */}
             <div className="absolute -bottom-5 -left-4 rounded-2xl border bg-white px-5 py-3 shadow-lg sm:-left-6">
               <div className="flex items-center gap-2">
@@ -208,10 +217,17 @@ export default function HomePage() {
                   id={service.id}
                   className="group rounded-3xl border bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
                 >
-                  <ImagePlaceholder
-                    label={`${service.title} — add photo here`}
-                    className="mb-4 aspect-video w-full"
-                  />
+                  {service.image && (
+                    <div className="relative mb-4 aspect-video w-full overflow-hidden rounded-2xl bg-stone-100">
+                      <Image
+                        src={service.image}
+                        alt={`${service.title} installation`}
+                        fill
+                        className="object-cover transition duration-300 group-hover:scale-105"
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      />
+                    </div>
+                  )}
                   <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
                     <Icon className="h-5 w-5" />
                   </div>
@@ -346,24 +362,23 @@ export default function HomePage() {
             </h2>
           </div>
 
-          {/* Certification image placeholders */}
           <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
-            {[
-              "Owens Corning Certification",
-              "Energize CT Partner Badge",
-              "Google 5-Star Badge",
-              "RIMA International Badge",
-            ].map((cert) => (
+            {certificationImages.map((cert) => (
               <div
-                key={cert}
+                key={cert.name}
                 className="flex flex-col items-center gap-3 rounded-2xl border bg-stone-50 p-5 text-center shadow-sm"
               >
-                <ImagePlaceholder
-                  label={cert}
-                  className="aspect-square w-full max-w-[100px]"
-                />
+                <div className="relative h-24 w-full sm:h-28">
+                  <Image
+                    src={cert.src}
+                    alt={cert.name}
+                    fill
+                    className="object-contain"
+                    sizes="(max-width: 640px) 50vw, 25vw"
+                  />
+                </div>
                 <p className="text-xs font-medium text-muted-foreground">
-                  {cert}
+                  {cert.name}
                 </p>
               </div>
             ))}

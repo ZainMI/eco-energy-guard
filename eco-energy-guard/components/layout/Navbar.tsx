@@ -66,10 +66,13 @@ export default function Navbar() {
 
           {/* Services dropdown */}
           <div className="group relative">
-            <button className="relative flex items-center gap-1 text-sm font-medium transition hover:text-primary after:absolute after:-bottom-2 after:left-0 after:h-0.5 after:w-0 after:bg-primary after:transition-all group-hover:after:w-full">
+            <Link
+              href="/services"
+              className="relative flex items-center gap-1 text-sm font-medium transition hover:text-primary after:absolute after:-bottom-2 after:left-0 after:h-0.5 after:w-0 after:bg-primary after:transition-all group-hover:after:w-full"
+            >
               Services
               <ChevronDown className="h-3.5 w-3.5 transition-transform duration-200 group-hover:rotate-180" />
-            </button>
+            </Link>
 
             <div className="invisible absolute left-1/2 top-full mt-3 max-h-[22rem] w-72 -translate-x-1/2 overflow-y-auto rounded-2xl border bg-white p-2 shadow-xl opacity-0 transition-all duration-150 group-hover:visible group-hover:opacity-100">
               {/* Arrow */}
@@ -144,17 +147,28 @@ export default function Navbar() {
 
                 {/* Mobile services accordion */}
                 <div>
-                  <button
-                    onClick={() => setServicesOpen(!servicesOpen)}
-                    className="flex w-full items-center justify-between rounded-2xl px-4 py-3.5 text-lg font-semibold transition hover:bg-muted"
-                  >
-                    Services
-                    <ChevronDown
-                      className={`h-5 w-5 text-muted-foreground transition-transform duration-200 ${
-                        servicesOpen ? "rotate-180" : ""
-                      }`}
-                    />
-                  </button>
+                  <div className="flex items-center rounded-2xl transition hover:bg-muted">
+                    <Link
+                      href="/services"
+                      onClick={() => setOpen(false)}
+                      className="flex-1 px-4 py-3.5 text-lg font-semibold"
+                    >
+                      Services
+                    </Link>
+                    <button
+                      type="button"
+                      aria-label="Toggle service links"
+                      aria-expanded={servicesOpen}
+                      onClick={() => setServicesOpen(!servicesOpen)}
+                      className="flex h-12 w-12 items-center justify-center rounded-2xl"
+                    >
+                      <ChevronDown
+                        className={`h-5 w-5 text-muted-foreground transition-transform duration-200 ${
+                          servicesOpen ? "rotate-180" : ""
+                        }`}
+                      />
+                    </button>
+                  </div>
 
                   {servicesOpen && (
                     <div className="ml-4 mt-1 flex flex-col gap-1 border-l pl-4">
