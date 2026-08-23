@@ -5,7 +5,7 @@ export const certificationImages = [
   },
   {
     name: "Energize CT Partner Badge",
-    src: "/images/Certifications/Energize CT Partner Badge.png",
+    src: "/images/Certifications/EnergizeCT.webp",
   },
   {
     name: "Google 5-Star Badge",
