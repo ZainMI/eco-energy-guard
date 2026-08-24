@@ -89,20 +89,20 @@ export const services: Service[] = [
   },
   {
     slug: "insulation-removal",
-    title: "Wall Insulation Removal",
+    title: "Wall Insulation",
     shortDescription:
-      "Safely remove damaged, contaminated, or underperforming wall insulation before upgrading.",
+      "Insulate wall cavities to improve comfort, reduce drafts, and limit unwanted heat transfer.",
     overview:
-      "Wall insulation removal clears old material when moisture, pests, odor, or degraded performance prevents an effective retrofit.",
+      "Wall insulation creates a reliable thermal boundary around living spaces and helps maintain consistent indoor temperatures.",
     homeBenefit:
-      "Clean wall cavities prepare your home for durable, high-performing insulation installation.",
+      "Properly insulated walls reduce hot and cold spots while making rooms feel quieter and more comfortable.",
     energySavings:
-      "Starting with clean, properly installed insulation helps ensure your upgrade delivers maximum efficiency gains.",
+      "Reducing heat flow through exterior walls lowers heating and cooling demand throughout the year.",
     highlights: [
-      "Removal of compromised wall insulation",
-      "Preparation for full retrofit projects",
-      "Cleaner substrate for air sealing",
-      "Better long-term insulation performance",
+      "Exterior wall cavity insulation",
+      "Improves thermal and sound control",
+      "Helps reduce drafts and energy loss",
+      "Suitable for renovations and retrofits",
     ],
   },
   {
