@@ -523,7 +523,7 @@ export default function BookPage() {
 
                 <div className="sm:col-span-2">
                   <label className="text-sm font-semibold">
-                    What can we help with?
+                    What can we help with? Please be as descriptive as possible.
                   </label>
                   <textarea
                     value={issueNotes}
