@@ -10,7 +10,6 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import Container from "@/components/layout/Container";
-import ImagePlaceholder from "@/components/ui/image-placeholder";
 import { certificationImages } from "@/lib/certification-images";
 
 const values = [
@@ -80,11 +79,34 @@ export default function AboutPage() {
               </div>
             </div>
 
-            {/* Team / owner photo placeholder */}
-            <ImagePlaceholder
-              label="Team or owner photo — add image here"
-              className="aspect-[4/3] w-full rounded-[2rem] shadow-xl"
-            />
+            <div>
+              <div className="relative aspect-[3/4] w-full overflow-hidden rounded-[2rem] bg-stone-100 shadow-xl">
+                <Image
+                  src="/images/about.jpeg"
+                  alt="William Brown, owner of Eco Energy Guard"
+                  fill
+                  priority
+                  className="object-cover"
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                />
+              </div>
+
+              <div className="mx-3 -mt-6 relative rounded-[2rem] border bg-white p-6 shadow-lg sm:mx-6 sm:p-8">
+                <p className="text-sm font-semibold uppercase tracking-wide text-primary">
+                  About the Owner
+                </p>
+                <h2 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">
+                  William Brown
+                </h2>
+                <p className="mt-4 leading-7 text-muted-foreground">
+                  William Brown holds a Bachelor of Science in Landscape
+                  Architecture from UMass Amherst. He is a leading expert in
+                  reflective insulation and other energy-efficient products in
+                  Connecticut. If you want to invest in your home, Eco Energy
+                  Guard is the company for you.
+                </p>
+              </div>
+            </div>
           </div>
         </Container>
       </section>
@@ -263,32 +285,6 @@ export default function AboutPage() {
         </Container>
       </section>
 
-      <section className="bg-stone-50 py-16 sm:py-24">
-        <Container>
-          <div className="mx-auto max-w-4xl rounded-[2rem] border bg-white p-8 shadow-sm sm:p-10">
-            <p className="text-sm font-semibold uppercase tracking-wide text-primary">
-              About the Owner
-            </p>
-            <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
-              William Brown
-            </h2>
-            <div className="mt-6 space-y-4 leading-8 text-muted-foreground">
-              <p>
-                William Brown holds a Bachelors of Science in Landscape
-                Architecture from UMass, Amherst Mass. He spent much of his life
-                in fine home construction and understands the science of how a
-                home works, the engineering of materials, and how they work
-                together.
-              </p>
-              <p>
-                He lived ten years in South East Asia building golf courses for
-                many well-known Golf Architects. He is an expert in reflective
-                insulation and other energy-efficient products in Connecticut.
-              </p>
-            </div>
-          </div>
-        </Container>
-      </section>
     </>
   );
 }

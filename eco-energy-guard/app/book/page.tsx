@@ -560,15 +560,15 @@ export default function BookPage() {
                 },
                 {
                   icon: CalendarClock,
-                  title: "Admin review",
+                  title: "Professional review",
                   description:
-                    "The team confirms the inspection and can reschedule if needed.",
+                    "One of our professionals confirms the inspection and can reschedule if needed.",
                 },
                 {
                   icon: Home,
                   title: "Estimate after inspection",
                   description:
-                    "After the visit, the admin can prepare an estimate and send installation scheduling options.",
+                    "After the visit, one of our professionals can prepare an estimate and send installation scheduling options.",
                 },
               ].map((step) => {
                 const Icon = step.icon;
