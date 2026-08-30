@@ -158,9 +158,15 @@ export default function BookPage() {
   async function submitRequest() {
     setMessage("");
 
-    if (!firstName || !lastName || !email || !selectedSlotId) {
+    if (
+      !firstName.trim() ||
+      !lastName.trim() ||
+      !email.trim() ||
+      !phone.trim() ||
+      !selectedSlotId
+    ) {
       setMessage(
-        "Please fill out your name, email, and preferred inspection time.",
+        "Please fill out your name, email, phone number, and preferred inspection time.",
       );
       return;
     }
@@ -178,8 +184,8 @@ export default function BookPage() {
       id: customerId,
       first_name: firstName,
       last_name: lastName,
-      email,
-      phone: phone || null,
+      email: email.trim(),
+      phone: phone.trim(),
       address: address || null,
       city: city || null,
       state: stateValue || null,
@@ -287,9 +293,13 @@ export default function BookPage() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-semibold">Email</label>
+                  <label className="text-sm font-semibold">
+                    Email <span className="text-red-600">*</span>
+                  </label>
                   <input
                     type="email"
+                    required
+                    autoComplete="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="mt-2 h-12 w-full rounded-xl border bg-background px-4 outline-none focus:border-primary focus:ring-4 focus:ring-primary/10"
@@ -297,9 +307,13 @@ export default function BookPage() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-semibold">Phone</label>
+                  <label className="text-sm font-semibold">
+                    Phone <span className="text-red-600">*</span>
+                  </label>
                   <input
                     type="tel"
+                    required
+                    autoComplete="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     className="mt-2 h-12 w-full rounded-xl border bg-background px-4 outline-none focus:border-primary focus:ring-4 focus:ring-primary/10"
