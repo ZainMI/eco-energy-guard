@@ -40,8 +40,12 @@ export default function GalleryPage() {
             </div>
           ) : (
             <div className="grid gap-8 lg:grid-cols-2">
-              {projects.map((project) => (
-                <BeforeAfterCard key={project.slug} project={project} />
+              {projects.map((project, index) => (
+                <BeforeAfterCard
+                  key={project.slug}
+                  project={project}
+                  priority={index === 0}
+                />
               ))}
             </div>
           )}

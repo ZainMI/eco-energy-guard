@@ -109,13 +109,16 @@ export default function Navbar() {
         {/* Mobile menu */}
         <div className="lg:hidden">
           <Sheet open={open} onOpenChange={setOpen}>
-            <SheetTrigger className="inline-flex h-10 w-10 items-center justify-center rounded-full border bg-white shadow-sm transition hover:bg-muted">
+            <SheetTrigger
+              aria-label="Open navigation menu"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border bg-white shadow-sm transition hover:bg-muted"
+            >
               <Menu className="h-5 w-5" />
             </SheetTrigger>
 
             <SheetContent
               side="right"
-              className="w-[82vw] max-w-sm border-l bg-background px-6 pt-10"
+              className="w-[82vw] max-w-sm overflow-y-auto overscroll-contain border-l bg-background px-6 pb-8 pt-10"
             >
               <div className="mb-8 flex items-center gap-3">
                 <Image

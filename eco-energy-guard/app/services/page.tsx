@@ -96,6 +96,7 @@ export default function ServicesPage() {
                             src={image}
                             alt={`${service.title} installation`}
                             fill
+                            loading={index === 0 ? "eager" : "lazy"}
                             className="object-cover"
                             sizes="(max-width: 1024px) 100vw, 50vw"
                           />

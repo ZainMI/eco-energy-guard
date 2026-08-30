@@ -14,8 +14,10 @@ import {
 
 export default function BeforeAfterCard({
   project,
+  priority = false,
 }: {
   project: GalleryProject;
+  priority?: boolean;
 }) {
   const location = [project.city, project.state].filter(Boolean).join(", ");
 
@@ -35,6 +37,7 @@ export default function BeforeAfterCard({
                 src={image.src}
                 alt={`${project.title} ${image.label.toLowerCase()}`}
                 fill
+                loading={priority ? "eager" : "lazy"}
                 className="object-cover transition duration-500 group-hover/gallery:scale-105"
                 sizes="(max-width: 1024px) 50vw, 25vw"
               />
