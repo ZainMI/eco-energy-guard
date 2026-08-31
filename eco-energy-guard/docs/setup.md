@@ -80,7 +80,7 @@ Environment Variables
 Production should use
 
 ```env
-NEXT_PUBLIC_SITE_URL=https://your-domain.com
+NEXT_PUBLIC_SITE_URL=https://www.ecoenergyguard.com
 ```
 
 instead of localhost.

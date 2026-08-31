@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
+import { getAuthSiteUrl } from "@/lib/site-url";
 
 export default function AdminLoginPage() {
   async function signInWithGoogle() {
@@ -10,7 +11,7 @@ export default function AdminLoginPage() {
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${getAuthSiteUrl(window.location.origin)}/auth/callback`,
       },
     });
   }

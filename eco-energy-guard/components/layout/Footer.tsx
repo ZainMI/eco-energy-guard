@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Phone } from "lucide-react";
+import { LockKeyhole, Phone } from "lucide-react";
 import {
   FREE_INSPECTION_CTA,
   PHONE_DISPLAY,
@@ -65,9 +65,19 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 border-t pt-8 text-center text-sm text-muted-foreground">
-          © {new Date().getFullYear()} Eco Energy Guard. All rights reserved. ·
-          Est. 2008 · Central Connecticut
+        <div className="mt-12 flex flex-col items-center justify-center gap-3 border-t pt-8 text-center text-sm text-muted-foreground sm:flex-row">
+          <span>
+            © {new Date().getFullYear()} Eco Energy Guard. All rights reserved. ·
+            Est. 2008 · Central Connecticut
+          </span>
+          <Link
+            href="/login"
+            className="inline-flex items-center gap-1.5 text-xs opacity-60 transition hover:text-foreground hover:opacity-100"
+            aria-label="Staff sign in"
+          >
+            <LockKeyhole className="h-3 w-3" />
+            Staff
+          </Link>
         </div>
       </div>
     </footer>

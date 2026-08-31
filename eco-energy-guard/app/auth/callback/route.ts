@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { getAuthSiteUrl } from "@/lib/site-url";
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
@@ -10,5 +11,5 @@ export async function GET(request: Request) {
     await supabase.auth.exchangeCodeForSession(code);
   }
 
-  return NextResponse.redirect(`${requestUrl.origin}/admin`);
+  return NextResponse.redirect(`${getAuthSiteUrl(requestUrl.origin)}/admin`);
 }
