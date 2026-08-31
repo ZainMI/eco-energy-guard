@@ -48,7 +48,7 @@ NEXT_PUBLIC_SUPABASE_URL=
 
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 
-NEXT_PUBLIC_SITE_URL=http://localhost:3000
+SITE_URL=http://localhost:3000
 
 SMTP_HOST=smtp.zoho.com
 SMTP_PORT=465
@@ -80,7 +80,7 @@ Environment Variables
 Production should use
 
 ```env
-NEXT_PUBLIC_SITE_URL=https://www.ecoenergyguard.com
+SITE_URL=https://www.ecoenergyguard.com
 ```
 
 instead of localhost.

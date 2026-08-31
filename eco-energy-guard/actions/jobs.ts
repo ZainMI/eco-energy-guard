@@ -144,7 +144,7 @@ export async function approveInspectionAction(
     .filter(Boolean)
     .join(", ");
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const siteUrl = process.env.SITE_URL || "http://localhost:3000";
   const manageLink = createCustomerManageLink(token);
   const jobLink = `${siteUrl}/admin/jobs/${jobId}`;
 
@@ -601,7 +601,7 @@ export async function sendEstimateAction(jobId: string): Promise<ActionResult> {
     };
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const siteUrl = process.env.SITE_URL || "http://localhost:3000";
   const scheduleLink = `${siteUrl}/schedule-installation/${token}`;
   const customerName = `${customer.first_name} ${customer.last_name}`;
 
@@ -876,7 +876,7 @@ export async function approveInstallationAction(
     ? (job.installation_calendar_sequence || 0) + 1
     : 0;
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const siteUrl = process.env.SITE_URL || "http://localhost:3000";
   const jobLink = `${siteUrl}/admin/jobs/${jobId}`;
 
   const icsContent = createMultiDayCalendarInvite({
@@ -1163,7 +1163,7 @@ export async function createManualBookingAction(
       .filter(Boolean)
       .join(", ");
     const customerName = `${firstName} ${lastName}`;
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+    const siteUrl = process.env.SITE_URL || "http://localhost:3000";
     const jobLink = `${siteUrl}/admin/jobs/${newJob.id}`;
 
     if (bookingType === "inspection") {
@@ -1315,7 +1315,7 @@ export async function resendLastEmailAction(
   if (!customer) return { ok: false, message: "Customer not found." };
 
   const customerName = `${customer.first_name} ${customer.last_name}`;
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const siteUrl = process.env.SITE_URL || "http://localhost:3000";
   const jobLink = `${siteUrl}/admin/jobs/${jobId}`;
   const address = [
     customer.address,
