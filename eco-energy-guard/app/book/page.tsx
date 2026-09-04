@@ -19,6 +19,7 @@ import { createClient } from "@/lib/supabase/client";
 import AddressAutocomplete from "@/components/forms/AddressAutocomplete";
 import { distanceMiles } from "@/lib/location";
 import { PHONE_DISPLAY } from "@/lib/site-content";
+import { createInspectionRequestAction } from "@/actions/inspection-requests";
 
 type Slot = {
   id: string;
@@ -178,46 +179,27 @@ export default function BookPage() {
 
     setSubmitting(true);
 
-    const customerId = crypto.randomUUID();
-
-    const { error: customerError } = await supabase.from("customers").insert({
-      id: customerId,
-      first_name: firstName,
-      last_name: lastName,
-      email: email.trim(),
-      phone: phone.trim(),
-      address: address || null,
-      city: city || null,
-      state: stateValue || null,
-      zip: zip || null,
+    const result = await createInspectionRequestAction({
+      firstName,
+      lastName,
+      email,
+      phone,
+      address,
+      city,
+      state: stateValue,
+      zip,
       latitude,
       longitude,
-      osm_place_id: osmPlaceId || null,
+      osmPlaceId,
+      slotId: selectedSlotId,
+      issueNotes,
     });
 
-    if (customerError) {
-      setMessage(customerError.message || "Could not create customer.");
+    if (!result.ok) {
+      setMessage(result.message);
       setSubmitting(false);
       return;
     }
-
-    const { error: jobError } = await supabase.from("jobs").insert({
-      customer_id: customerId,
-      inspection_slot_id: selectedSlotId,
-      status: "inspection_requested",
-      issue_notes: issueNotes || null,
-    });
-
-    if (jobError) {
-      setMessage(jobError.message);
-      setSubmitting(false);
-      return;
-    }
-
-    await supabase
-      .from("slots")
-      .update({ is_available: false })
-      .eq("id", selectedSlotId);
 
     setSuccess(true);
     setSubmitting(false);

@@ -1,5 +1,62 @@
 import { formatDateTimeRange } from "@/lib/date";
 
+function escapeHtml(value: string) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+export function inspectionRequestNotificationHtml({
+  customerName,
+  customerEmail,
+  customerPhone,
+  startsAt,
+  endsAt,
+  address,
+  issueNotes,
+  adminLink,
+}: {
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  startsAt: string;
+  endsAt: string;
+  address: string;
+  issueNotes?: string | null;
+  adminLink: string;
+}) {
+  const safeName = escapeHtml(customerName);
+  const safeEmail = escapeHtml(customerEmail);
+  const safePhone = escapeHtml(customerPhone);
+  const safeAddress = escapeHtml(address);
+  const safeNotes = issueNotes ? escapeHtml(issueNotes) : "None provided";
+
+  return `
+    <div style="font-family: Arial, sans-serif; max-width: 640px; margin: 0 auto; color: #222;">
+      <h1>New inspection request</h1>
+      <p>${safeName} submitted a new home energy inspection request.</p>
+
+      <div style="background:#f6f3ea; border-radius:16px; padding:20px; margin:24px 0;">
+        <p><strong>Customer:</strong> ${safeName}</p>
+        <p><strong>Email:</strong> <a href="mailto:${safeEmail}">${safeEmail}</a></p>
+        <p><strong>Phone:</strong> ${safePhone}</p>
+        <p><strong>Requested time:</strong> ${formatDateTimeRange(startsAt, endsAt)}</p>
+        <p><strong>Address:</strong> ${safeAddress}</p>
+      </div>
+
+      <div style="border:1px solid #ddd; border-radius:16px; padding:20px; margin:24px 0;">
+        <p><strong>Customer notes:</strong></p>
+        <p>${safeNotes}</p>
+      </div>
+
+      <p><a href="${adminLink}" style="color:#047857; font-weight:bold;">Review the request in the admin dashboard</a>.</p>
+    </div>
+  `;
+}
+
 export function inspectionApprovedHtml({
   customerName,
   startsAt,

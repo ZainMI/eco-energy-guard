@@ -2,6 +2,7 @@ import nodemailer from "nodemailer";
 import {
   estimateReadyHtml,
   inspectionApprovedHtml,
+  inspectionRequestNotificationHtml,
   installationProposalAcceptedWorkerHtml,
   installationProposalChangesRequestedWorkerHtml,
   installationAssignedWorkerHtml,
@@ -26,6 +27,48 @@ const transporter = nodemailer.createTransport({
 
 const from =
   process.env.EMAIL_FROM || `Eco Energy Guard <${process.env.SMTP_USER}>`;
+
+export async function sendInspectionRequestNotificationEmail({
+  customerName,
+  customerEmail,
+  customerPhone,
+  startsAt,
+  endsAt,
+  address,
+  issueNotes,
+  adminLink,
+}: {
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  startsAt: string;
+  endsAt: string;
+  address: string;
+  issueNotes?: string | null;
+  adminLink: string;
+}) {
+  const result = await transporter.sendMail({
+    from,
+    to: "info@ecoenergyguard.com",
+    replyTo: customerEmail,
+    subject: `New inspection request: ${customerName}`,
+    html: inspectionRequestNotificationHtml({
+      customerName,
+      customerEmail,
+      customerPhone,
+      startsAt,
+      endsAt,
+      address,
+      issueNotes,
+      adminLink,
+    }),
+  });
+
+  return {
+    accepted: result.accepted.map(String),
+    id: result.messageId,
+  };
+}
 
 export async function sendInspectionApprovedEmail({
   to,
