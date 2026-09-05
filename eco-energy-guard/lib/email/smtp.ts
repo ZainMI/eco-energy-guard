@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
 import {
+  contactMessageNotificationHtml,
   estimateReadyHtml,
   inspectionApprovedHtml,
   inspectionRequestNotificationHtml,
@@ -27,6 +28,36 @@ const transporter = nodemailer.createTransport({
 
 const from =
   process.env.EMAIL_FROM || `Eco Energy Guard <${process.env.SMTP_USER}>`;
+
+export async function sendContactMessageNotificationEmail({
+  customerName,
+  customerEmail,
+  customerPhone,
+  message,
+}: {
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  message: string;
+}) {
+  const result = await transporter.sendMail({
+    from,
+    to: "info@ecoenergyguard.com",
+    replyTo: customerEmail,
+    subject: `New website message: ${customerName}`,
+    html: contactMessageNotificationHtml({
+      customerName,
+      customerEmail,
+      customerPhone,
+      message,
+    }),
+  });
+
+  return {
+    accepted: result.accepted.map(String),
+    id: result.messageId,
+  };
+}
 
 export async function sendInspectionRequestNotificationEmail({
   customerName,

@@ -9,6 +9,41 @@ function escapeHtml(value: string) {
     .replaceAll("'", "&#039;");
 }
 
+export function contactMessageNotificationHtml({
+  customerName,
+  customerEmail,
+  customerPhone,
+  message,
+}: {
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  message: string;
+}) {
+  const safeName = escapeHtml(customerName);
+  const safeEmail = escapeHtml(customerEmail);
+  const safePhone = escapeHtml(customerPhone);
+  const safeMessage = escapeHtml(message).replaceAll("\n", "<br />");
+
+  return `
+    <div style="font-family: Arial, sans-serif; max-width: 640px; margin: 0 auto; color: #222;">
+      <h1>New website message</h1>
+      <p>${safeName} sent a message through the Eco Energy Guard contact page.</p>
+
+      <div style="background:#f6f3ea; border-radius:16px; padding:20px; margin:24px 0;">
+        <p><strong>Name:</strong> ${safeName}</p>
+        <p><strong>Email:</strong> <a href="mailto:${safeEmail}">${safeEmail}</a></p>
+        <p><strong>Phone:</strong> ${safePhone}</p>
+      </div>
+
+      <div style="border:1px solid #ddd; border-radius:16px; padding:20px; margin:24px 0;">
+        <p><strong>Message:</strong></p>
+        <p>${safeMessage}</p>
+      </div>
+    </div>
+  `;
+}
+
 export function inspectionRequestNotificationHtml({
   customerName,
   customerEmail,
