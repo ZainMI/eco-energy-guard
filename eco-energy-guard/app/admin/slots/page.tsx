@@ -32,6 +32,11 @@ type Slot = {
   created_at: string;
 };
 
+type NewSlot = Pick<
+  Slot,
+  "type" | "starts_at" | "ends_at" | "is_available" | "notes"
+>;
+
 const weekdays = [
   { label: "Sun", value: 0 },
   { label: "Mon", value: 1 },
@@ -54,6 +59,11 @@ function getNextDateForWeekday(weekday: number) {
 
 function buildLocalDateTime(date: string, time: string) {
   return new Date(`${date}T${time}`).toISOString();
+}
+
+function timeToMinutes(time: string) {
+  const [hours, minutes] = time.split(":").map(Number);
+  return hours * 60 + minutes;
 }
 
 export default function AdminSlotsPage() {
@@ -183,7 +193,53 @@ export default function AdminSlotsPage() {
       return;
     }
 
-    const rows = [];
+    const windowMinutes = timeToMinutes(endTime) - timeToMinutes(startTime);
+
+    if (type === "inspection" && windowMinutes < 60) {
+      setMessage("An inspection availability window must be at least 1 hour.");
+      return;
+    }
+
+    if (type === "inspection" && windowMinutes % 60 !== 0) {
+      setMessage(
+        "Inspection availability must divide evenly into 1-hour blocks.",
+      );
+      return;
+    }
+
+    const rows: NewSlot[] = [];
+
+    function addAvailabilityWindow(targetDate: string) {
+      if (type === "installation") {
+        rows.push({
+          type,
+          starts_at: buildLocalDateTime(targetDate, startTime),
+          ends_at: buildLocalDateTime(targetDate, endTime),
+          notes: notes || null,
+          is_available: true,
+        });
+        return;
+      }
+
+      const windowStart = new Date(`${targetDate}T${startTime}`);
+      const windowEnd = new Date(`${targetDate}T${endTime}`);
+
+      for (
+        let blockStart = windowStart;
+        blockStart < windowEnd;
+        blockStart = new Date(blockStart.getTime() + 60 * 60 * 1000)
+      ) {
+        const blockEnd = new Date(blockStart.getTime() + 60 * 60 * 1000);
+
+        rows.push({
+          type,
+          starts_at: blockStart.toISOString(),
+          ends_at: blockEnd.toISOString(),
+          notes: notes || null,
+          is_available: true,
+        });
+      }
+    }
 
     if (mode === "single") {
       if (!date) {
@@ -191,13 +247,7 @@ export default function AdminSlotsPage() {
         return;
       }
 
-      rows.push({
-        type,
-        starts_at: buildLocalDateTime(date, startTime),
-        ends_at: buildLocalDateTime(date, endTime),
-        notes: notes || null,
-        is_available: true,
-      });
+      addAvailabilityWindow(date);
     }
 
     if (mode === "recurring") {
@@ -214,13 +264,7 @@ export default function AdminSlotsPage() {
 
         const recurringDateString = recurringDate.toISOString().split("T")[0];
 
-        rows.push({
-          type,
-          starts_at: buildLocalDateTime(recurringDateString, startTime),
-          ends_at: buildLocalDateTime(recurringDateString, endTime),
-          notes: notes || null,
-          is_available: true,
-        });
+        addAvailabilityWindow(recurringDateString);
       }
     }
 
@@ -237,9 +281,7 @@ export default function AdminSlotsPage() {
     setNotes("");
 
     setMessage(
-      mode === "single"
-        ? "Slot created successfully."
-        : `${rows.length} recurring slots created successfully.`,
+      `${rows.length} availability slot${rows.length === 1 ? "" : "s"} created successfully.`,
     );
 
     await loadSlots();
@@ -451,6 +493,14 @@ export default function AdminSlotsPage() {
                 </div>
               </div>
 
+              {type === "inspection" && (
+                <p className="rounded-xl bg-emerald-50 px-4 py-3 text-xs font-medium leading-5 text-emerald-800">
+                  This window will be published as consecutive 1-hour
+                  appointments. For example, 9:00 AM–12:00 PM creates three
+                  bookable slots.
+                </p>
+              )}
+
               <div>
                 <label className="text-sm font-semibold text-stone-800">
                   Internal Remarks
@@ -469,7 +519,9 @@ export default function AdminSlotsPage() {
                 className="inline-flex h-12 w-full items-center justify-center rounded-full bg-primary px-7 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90 cursor-pointer"
               >
                 <Plus className="mr-2 h-4 w-4" />
-                Publish Availability
+                {type === "inspection"
+                  ? "Publish 1-Hour Slots"
+                  : "Publish Availability"}
               </button>
 
               {message && (
