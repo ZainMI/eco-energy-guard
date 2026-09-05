@@ -993,6 +993,13 @@ export async function createManualBookingAction(
     teamIds,
   } = formData;
 
+  if (bookingType !== "inspection") {
+    return {
+      ok: false,
+      message: "Only inspection bookings are supported.",
+    };
+  }
+
   if (teamIds.length === 0) {
     return { ok: false, message: "Please assign at least one team member." };
   }

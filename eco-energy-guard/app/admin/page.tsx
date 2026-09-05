@@ -5,13 +5,10 @@ import Link from "next/link";
 import {
   CalendarClock,
   CheckCircle2,
-  Clock,
-  FileText,
   Plus,
   Search,
   UserCog,
   Hourglass,
-  Wrench,
   ClipboardCheck,
   XCircle,
 } from "lucide-react";
@@ -40,8 +37,6 @@ type Job = {
   status: JobStatus;
   created_at: string;
   inspection_slot: Slot | null;
-  installation_slot: Slot | null;
-  manual_estimate_amount: number | null;
   customers: {
     first_name: string;
     last_name: string;
@@ -69,10 +64,10 @@ const nextStepMap: Record<JobStatus, string> = {
   inspection_requested: "Review and approve inspection",
   reschedule_requested: "Customer needs a new inspection time",
   inspection_scheduled: "Complete inspection inputs",
-  inspection_completed: "Prepare and send estimate",
-  estimate_sent: "Waiting for customer to request installation",
-  installation_requested: "Review and approve installation",
-  installation_scheduled: "Installation scheduled",
+  inspection_completed: "Inspection finished",
+  estimate_sent: "Archived legacy job",
+  installation_requested: "Archived legacy job",
+  installation_scheduled: "Archived legacy job",
   completed: "Job completed",
   cancelled: "Job cancelled",
 };
@@ -81,9 +76,7 @@ const statusFilters = [
   { label: "All", value: "all" },
   { label: "Inspection Requests", value: "inspection_requested" },
   { label: "Scheduled Inspections", value: "inspection_scheduled" },
-  { label: "Estimates", value: "estimate_sent" },
-  { label: "Installation Requests", value: "installation_requested" },
-  { label: "Scheduled Installations", value: "installation_scheduled" },
+  { label: "Completed Inspections", value: "inspection_completed" },
   { label: "Completed", value: "completed" },
   { label: "Cancelled", value: "cancelled" },
 ];
@@ -105,7 +98,6 @@ export default function AdminPage() {
           id,
           status,
           created_at,
-          manual_estimate_amount,
           customers (
             first_name,
             last_name,
@@ -115,8 +107,7 @@ export default function AdminPage() {
             city,
             state
           ),
-          inspection_slot:inspection_slot_id(id, starts_at, ends_at),
-          installation_slot:installation_slot_id(id, starts_at, ends_at)
+          inspection_slot:inspection_slot_id(id, starts_at, ends_at)
         `,
         )
         .order("created_at", { ascending: false });
@@ -129,12 +120,20 @@ export default function AdminPage() {
         inspection_slot: Array.isArray(job.inspection_slot)
           ? (job.inspection_slot[0] ?? null)
           : job.inspection_slot,
-        installation_slot: Array.isArray(job.installation_slot)
-          ? (job.installation_slot[0] ?? null)
-          : job.installation_slot,
       })) as Job[];
 
-      setJobs(typedJobs);
+      setJobs(
+        typedJobs.filter((job) =>
+          [
+            "inspection_requested",
+            "reschedule_requested",
+            "inspection_scheduled",
+            "inspection_completed",
+            "completed",
+            "cancelled",
+          ].includes(job.status),
+        ),
+      );
       setLoading(false);
     }
 
@@ -145,12 +144,6 @@ export default function AdminPage() {
     return jobs
       .filter((job) => {
         if (activeFilter === "all") return true;
-        if (activeFilter === "estimate_sent") {
-          return (
-            job.status === "estimate_sent" ||
-            job.status === "inspection_completed"
-          );
-        }
         return job.status === activeFilter;
       })
       .filter((job) => {
@@ -182,12 +175,8 @@ export default function AdminPage() {
       scheduledInspection: jobs.filter(
         (j) => j.status === "inspection_scheduled",
       ).length,
-      estimatesSent: jobs.filter((j) => j.status === "estimate_sent").length,
-      pendingInstallation: jobs.filter(
-        (j) => j.status === "installation_requested",
-      ).length,
-      scheduledInstallation: jobs.filter(
-        (j) => j.status === "installation_scheduled",
+      completedInspection: jobs.filter(
+        (j) => j.status === "inspection_completed",
       ).length,
       completed: jobs.filter((j) => j.status === "completed").length,
     };
@@ -205,19 +194,9 @@ export default function AdminPage() {
       icon: CalendarClock,
     },
     {
-      label: "Estimates Sent",
-      value: stats.estimatesSent,
-      icon: FileText,
-    },
-    {
-      label: "Installation Requests",
-      value: stats.pendingInstallation,
-      icon: Wrench,
-    },
-    {
-      label: "Scheduled Installations",
-      value: stats.scheduledInstallation,
-      icon: Clock,
+      label: "Completed Inspections",
+      value: stats.completedInspection,
+      icon: ClipboardCheck,
     },
     {
       label: "Completed Jobs",
@@ -248,8 +227,7 @@ export default function AdminPage() {
               Jobs & Scheduling
             </h1>
             <p className="mt-4 max-w-xl text-muted-foreground">
-              Manage inspection requests, estimates, installations, and customer
-              scheduling.
+              Manage inspection requests and customer scheduling.
             </p>
           </div>
 
@@ -280,7 +258,7 @@ export default function AdminPage() {
           </div>
         </div>
 
-        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {statCards.map((stat) => {
             const Icon = stat.icon;
 
@@ -396,19 +374,6 @@ export default function AdminPage() {
                               <p>
                                 <strong>Inspection:</strong>{" "}
                                 {formatSlot(job.inspection_slot)}
-                              </p>
-                              <p>
-                                <strong>Installation:</strong>{" "}
-                                {formatSlot(job.installation_slot)}
-                              </p>
-                              <p>
-                                <strong>Estimate:</strong>{" "}
-                                {job.manual_estimate_amount
-                                  ? new Intl.NumberFormat("en-US", {
-                                      style: "currency",
-                                      currency: "USD",
-                                    }).format(job.manual_estimate_amount)
-                                  : "Not set"}
                               </p>
                             </div>
 

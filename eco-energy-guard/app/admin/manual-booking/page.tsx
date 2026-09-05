@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Plus, UserCheck, Wrench } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import Container from "@/components/layout/Container";
 import { createClient } from "@/lib/supabase/client";
@@ -40,9 +40,6 @@ export default function ManualBookingPage() {
   const [serviceAreaWarning, setServiceAreaWarning] = useState("");
 
   // Form state
-  const [bookingType, setBookingType] = useState<"inspection" | "installation">(
-    "inspection",
-  );
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -54,9 +51,6 @@ export default function ManualBookingPage() {
   const [latitude, setLatitude] = useState<number | null>(null);
   const [longitude, setLongitude] = useState<number | null>(null);
   const [osmPlaceId, setOsmPlaceId] = useState("");
-  const [manualEstimateAmount, setManualEstimateAmount] = useState<
-    number | null
-  >(null);
   const [teamIds, setTeamIds] = useState<string[]>([]);
   const [scheduleDays, setScheduleDays] = useState<ScheduleDayRow[]>([
     { date: "", startTime: "09:00", endTime: "13:00", notes: "" },
@@ -81,7 +75,7 @@ export default function ManualBookingPage() {
     setMessage("");
 
     const result = await createManualBookingAction({
-      bookingType,
+      bookingType: "inspection",
       firstName,
       lastName,
       email,
@@ -94,7 +88,7 @@ export default function ManualBookingPage() {
       longitude,
       osmPlaceId,
       scheduleDays,
-      manualEstimateAmount,
+      manualEstimateAmount: null,
       teamIds,
     });
 
@@ -137,39 +131,6 @@ export default function ManualBookingPage() {
         <div className="mt-12 max-w-4xl">
           <div className="rounded-[2rem] border bg-white p-6 shadow-sm sm:p-8">
             <div className="space-y-6">
-              <div>
-                <label className="text-sm font-semibold">Booking Type</label>
-                <div className="mt-2 grid grid-cols-2 gap-2 rounded-xl bg-stone-100 p-1">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setBookingType("inspection");
-                      if (scheduleDays.length > 1) {
-                        setScheduleDays([scheduleDays[0]]);
-                      }
-                    }}
-                    className={`flex cursor-pointer items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold transition ${
-                      bookingType === "inspection"
-                        ? "bg-white shadow-sm"
-                        : "text-stone-500 hover:text-stone-900"
-                    }`}
-                  >
-                    <UserCheck className="h-4 w-4" /> Inspection
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setBookingType("installation")}
-                    className={`flex cursor-pointer items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold transition ${
-                      bookingType === "installation"
-                        ? "bg-white shadow-sm"
-                        : "text-stone-500 hover:text-stone-900"
-                    }`}
-                  >
-                    <Wrench className="h-4 w-4" /> Installation
-                  </button>
-                </div>
-              </div>
-
               <div className="grid gap-5 sm:grid-cols-2">
                 <div>
                   <label className="text-sm font-semibold">First Name</label>
@@ -271,24 +232,7 @@ export default function ManualBookingPage() {
               {scheduleDays.map((day, index) => (
                 <div key={index} className="rounded-2xl border bg-stone-50 p-4">
                   <div className="flex items-center justify-between">
-                    <p className="font-semibold">
-                      {bookingType === "installation"
-                        ? `Day ${index + 1}`
-                        : "Date & Time"}
-                    </p>
-                    {bookingType === "installation" && index > 0 && (
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setScheduleDays(
-                            scheduleDays.filter((_, i) => i !== index),
-                          )
-                        }
-                        className="text-xs font-semibold text-red-500 hover:text-red-700"
-                      >
-                        Remove Day
-                      </button>
-                    )}
+                    <p className="font-semibold">Date & Time</p>
                   </div>
                   <div className="mt-4 grid gap-5 sm:grid-cols-3">
                     <div>
@@ -335,9 +279,7 @@ export default function ManualBookingPage() {
                   </div>
                   <div className="mt-4">
                     <label className="text-sm font-semibold">
-                      {bookingType === "inspection"
-                        ? "Customer Issue Notes"
-                        : "Notes for this day (optional)"}
+                      Customer Issue Notes
                     </label>
                     <textarea
                       value={day.notes}
@@ -347,62 +289,14 @@ export default function ManualBookingPage() {
                         setScheduleDays(newDays);
                       }}
                       className="mt-2 min-h-20 w-full rounded-xl border bg-background px-4 py-3 outline-none focus:border-primary focus:ring-4 focus:ring-primary/10"
-                      placeholder={
-                        bookingType === "inspection"
-                          ? "Notes from the customer..."
-                          : "e.g., Morning crew only"
-                      }
+                      placeholder="Notes from the customer..."
                     />
                   </div>
                 </div>
               ))}
 
-              {bookingType === "installation" && (
-                <button
-                  type="button"
-                  onClick={() =>
-                    setScheduleDays([
-                      ...scheduleDays,
-                      {
-                        date: "",
-                        startTime: "09:00",
-                        endTime: "13:00",
-                        notes: "",
-                      },
-                    ])
-                  }
-                  className="inline-flex h-11 items-center justify-center rounded-full border bg-white px-6 text-sm font-semibold transition hover:bg-muted"
-                >
-                  <Plus className="mr-2 h-4 w-4" /> Add Installation Day
-                </button>
-              )}
-
-              {bookingType === "installation" && (
-                <div>
-                  <label className="text-sm font-semibold">
-                    Manual Estimate Amount
-                  </label>
-                  <input
-                    type="number"
-                    value={manualEstimateAmount ?? ""}
-                    onChange={(e) =>
-                      setManualEstimateAmount(
-                        e.target.value ? Number(e.target.value) : null,
-                      )
-                    }
-                    className="mt-2 h-12 w-full rounded-xl border bg-background px-4 outline-none focus:border-primary focus:ring-4 focus:ring-primary/10"
-                    placeholder="e.g., 2500"
-                  />
-                </div>
-              )}
-
               <div>
                 <label className="text-sm font-semibold">Assign Team</label>
-                {bookingType === "installation" && (
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    This team will be assigned to all installation days.
-                  </p>
-                )}
                 {loading ? (
                   <p className="mt-2 text-sm text-muted-foreground">
                     Loading team...

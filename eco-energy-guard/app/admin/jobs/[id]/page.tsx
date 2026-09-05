@@ -97,6 +97,8 @@ const statusLabels: Record<JobStatus, string> = {
   cancelled: "Cancelled",
 };
 
+const INSTALLATION_WORKFLOW_ENABLED = false;
+
 export default function AdminJobPage() {
   const params = useParams<{ id: string }>();
   const supabase = createClient();
@@ -312,7 +314,7 @@ export default function AdminJobPage() {
       return;
     }
 
-    setMessage("Inspection marked complete. Estimate stage is now available.");
+    setMessage("Inspection marked complete.");
     await loadJob();
   }
 
@@ -488,13 +490,6 @@ export default function AdminJobPage() {
                 <p>
                   <strong>Inspection:</strong> {formatSlot(job.inspection_slot)}
                 </p>
-                <p>
-                  <strong>Installation:</strong>{" "}
-                  {formatSlot(job.installation_slot) ||
-                    (installationProposals.length > 0
-                      ? "Pending approval"
-                      : "Not scheduled")}
-                </p>
               </div>
             </div>
             <div className="rounded-[2rem] border bg-white p-6 shadow-sm">
@@ -599,8 +594,7 @@ export default function AdminJobPage() {
             )}
 
             {(job.status === "inspection_scheduled" ||
-              job.status === "inspection_completed" ||
-              job.status === "estimate_sent") && (
+              job.status === "inspection_completed") && (
               <div className="rounded-[2rem] border bg-white p-6 shadow-sm sm:p-8">
                 <h2 className="text-2xl font-bold">Inspection Inputs</h2>
 
@@ -730,102 +724,103 @@ export default function AdminJobPage() {
               </div>
             )}
 
-            {(job.status === "inspection_completed" ||
-              job.status === "estimate_sent" ||
-              job.status === "installation_proposal_changes_requested") && (
-              <div className="rounded-[2rem] border bg-white p-6 shadow-sm sm:p-8">
-                <h2 className="text-2xl font-bold">Installation Proposal</h2>
-                <p className="mt-3 text-muted-foreground">
-                  Add one or more proposed installation days before sending the
-                  estimate.
-                </p>
+            {INSTALLATION_WORKFLOW_ENABLED &&
+              (job.status === "inspection_completed" ||
+                job.status === "estimate_sent" ||
+                job.status === "installation_proposal_changes_requested") && (
+                <div className="rounded-[2rem] border bg-white p-6 shadow-sm sm:p-8">
+                  <h2 className="text-2xl font-bold">Installation Proposal</h2>
+                  <p className="mt-3 text-muted-foreground">
+                    Add one or more proposed installation days before sending
+                    the estimate.
+                  </p>
 
-                <div className="mt-6 grid gap-4">
-                  {proposalRows.map((row, index) => (
-                    <div key={index} className="rounded-2xl bg-secondary p-4">
-                      <div className="flex items-center justify-between">
-                        <p className="font-semibold">Day {index + 1}</p>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setProposalRows(
-                              proposalRows.filter((_, i) => i !== index),
-                            )
-                          }
-                          className="text-xs font-semibold text-red-500 hover:text-red-700"
-                        >
-                          Remove
-                        </button>
+                  <div className="mt-6 grid gap-4">
+                    {proposalRows.map((row, index) => (
+                      <div key={index} className="rounded-2xl bg-secondary p-4">
+                        <div className="flex items-center justify-between">
+                          <p className="font-semibold">Day {index + 1}</p>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setProposalRows(
+                                proposalRows.filter((_, i) => i !== index),
+                              )
+                            }
+                            className="text-xs font-semibold text-red-500 hover:text-red-700"
+                          >
+                            Remove
+                          </button>
+                        </div>
+
+                        <div className="mt-4 grid gap-4 sm:grid-cols-3">
+                          <input
+                            type="date"
+                            value={row.date}
+                            onChange={(e) => {
+                              const newRows = [...proposalRows];
+                              newRows[index].date = e.target.value;
+                              setProposalRows(newRows);
+                            }}
+                            className="h-11 w-full rounded-lg border bg-background px-3"
+                          />
+                          <input
+                            type="time"
+                            value={row.start_time}
+                            onChange={(e) => {
+                              const newRows = [...proposalRows];
+                              newRows[index].start_time = e.target.value;
+                              setProposalRows(newRows);
+                            }}
+                            className="h-11 w-full rounded-lg border bg-background px-3"
+                          />
+                          <input
+                            type="time"
+                            value={row.end_time}
+                            onChange={(e) => {
+                              const newRows = [...proposalRows];
+                              newRows[index].end_time = e.target.value;
+                              setProposalRows(newRows);
+                            }}
+                            className="h-11 w-full rounded-lg border bg-background px-3"
+                          />
+                        </div>
                       </div>
+                    ))}
+                  </div>
 
-                      <div className="mt-4 grid gap-4 sm:grid-cols-3">
-                        <input
-                          type="date"
-                          value={row.date}
-                          onChange={(e) => {
-                            const newRows = [...proposalRows];
-                            newRows[index].date = e.target.value;
-                            setProposalRows(newRows);
-                          }}
-                          className="h-11 w-full rounded-lg border bg-background px-3"
-                        />
-                        <input
-                          type="time"
-                          value={row.start_time}
-                          onChange={(e) => {
-                            const newRows = [...proposalRows];
-                            newRows[index].start_time = e.target.value;
-                            setProposalRows(newRows);
-                          }}
-                          className="h-11 w-full rounded-lg border bg-background px-3"
-                        />
-                        <input
-                          type="time"
-                          value={row.end_time}
-                          onChange={(e) => {
-                            const newRows = [...proposalRows];
-                            newRows[index].end_time = e.target.value;
-                            setProposalRows(newRows);
-                          }}
-                          className="h-11 w-full rounded-lg border bg-background px-3"
-                        />
-                      </div>
-                    </div>
-                  ))}
+                  <div className="mt-6 flex flex-wrap gap-3">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setProposalRows([
+                          ...proposalRows,
+                          {
+                            day_number: proposalRows.length + 1,
+                            date: "",
+                            start_time: "09:00",
+                            end_time: "13:00",
+                            notes: "",
+                          },
+                        ])
+                      }
+                      className="inline-flex h-11 items-center justify-center rounded-full border bg-white px-6 text-sm font-semibold transition hover:bg-muted"
+                    >
+                      <Plus className="mr-2 h-4 w-4" />
+                      Add Day
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={saveInstallationProposal}
+                      className="inline-flex h-11 items-center justify-center rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
+                    >
+                      <Save className="mr-2 h-4 w-4" />
+                      Save Installation Proposal
+                    </button>
+                  </div>
                 </div>
-
-                <div className="mt-6 flex flex-wrap gap-3">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setProposalRows([
-                        ...proposalRows,
-                        {
-                          day_number: proposalRows.length + 1,
-                          date: "",
-                          start_time: "09:00",
-                          end_time: "13:00",
-                          notes: "",
-                        },
-                      ])
-                    }
-                    className="inline-flex h-11 items-center justify-center rounded-full border bg-white px-6 text-sm font-semibold transition hover:bg-muted"
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add Day
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={saveInstallationProposal}
-                    className="inline-flex h-11 items-center justify-center rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
-                  >
-                    <Save className="mr-2 h-4 w-4" />
-                    Save Installation Proposal
-                  </button>
-                </div>
-              </div>
-            )}
+              )}
 
             {(job.status === "inspection_completed" ||
               job.status === "estimate_sent") && (
@@ -913,164 +908,179 @@ export default function AdminJobPage() {
               </div>
             )}
 
-            {(job.status === "installation_requested" ||
-              job.status === "installation_scheduled" ||
-              job.status === "installation_proposal_changes_requested") && (
-              <div className="rounded-[2rem] border bg-white p-6 shadow-sm sm:p-8">
-                <h2 className="text-2xl font-bold">
-                  Review Installation Request
-                </h2>
+            {INSTALLATION_WORKFLOW_ENABLED &&
+              (job.status === "installation_requested" ||
+                job.status === "installation_scheduled" ||
+                job.status === "installation_proposal_changes_requested") && (
+                <div className="rounded-[2rem] border bg-white p-6 shadow-sm sm:p-8">
+                  <h2 className="text-2xl font-bold">
+                    Review Installation Request
+                  </h2>
 
-                <p className="mt-3 text-muted-foreground">
-                  The customer selected an installation time. Review and approve
-                  it, or propose a new schedule.
-                </p>
+                  <p className="mt-3 text-muted-foreground">
+                    The customer selected an installation time. Review and
+                    approve it, or propose a new schedule.
+                  </p>
 
-                <div className="mt-6 space-y-4">
-                  {installationProposals
-                    .filter((p) => p.status === "accepted")
-                    .map((proposal) => (
-                      <div
-                        key={proposal.id}
-                        className="rounded-2xl bg-secondary p-5"
-                      >
-                        <p className="text-sm font-semibold">
-                          Accepted Installation Schedule
-                        </p>
-                        <div className="mt-2 space-y-2 text-sm text-muted-foreground">
-                          <p>
-                            <strong>Day {proposal.day_number}:</strong>{" "}
-                            {new Date(proposal.starts_at).toLocaleDateString()}{" "}
-                            {new Date(proposal.starts_at).toLocaleTimeString(
-                              [],
-                              { hour: "numeric", minute: "2-digit" },
-                            )}{" "}
-                            -{" "}
-                            {new Date(proposal.ends_at).toLocaleTimeString([], {
-                              hour: "numeric",
-                              minute: "2-digit",
-                            })}
+                  <div className="mt-6 space-y-4">
+                    {installationProposals
+                      .filter((p) => p.status === "accepted")
+                      .map((proposal) => (
+                        <div
+                          key={proposal.id}
+                          className="rounded-2xl bg-secondary p-5"
+                        >
+                          <p className="text-sm font-semibold">
+                            Accepted Installation Schedule
+                          </p>
+                          <div className="mt-2 space-y-2 text-sm text-muted-foreground">
+                            <p>
+                              <strong>Day {proposal.day_number}:</strong>{" "}
+                              {new Date(
+                                proposal.starts_at,
+                              ).toLocaleDateString()}{" "}
+                              {new Date(proposal.starts_at).toLocaleTimeString(
+                                [],
+                                { hour: "numeric", minute: "2-digit" },
+                              )}{" "}
+                              -{" "}
+                              {new Date(proposal.ends_at).toLocaleTimeString(
+                                [],
+                                {
+                                  hour: "numeric",
+                                  minute: "2-digit",
+                                },
+                              )}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+
+                    {installationProposals
+                      .filter((p) => p.status === "changes_requested")
+                      .map((proposal) => (
+                        <div
+                          key={proposal.id}
+                          className="rounded-2xl bg-amber-50 p-5"
+                        >
+                          <p className="text-sm font-semibold text-amber-800">
+                            Customer Requested Changes
+                          </p>
+                          <p className="mt-2 text-sm text-amber-700">
+                            {proposal.change_request_message}
                           </p>
                         </div>
-                      </div>
-                    ))}
+                      ))}
 
-                  {installationProposals
-                    .filter((p) => p.status === "changes_requested")
-                    .map((proposal) => (
-                      <div
-                        key={proposal.id}
-                        className="rounded-2xl bg-amber-50 p-5"
+                    <div className="rounded-2xl bg-secondary p-5">
+                      <p className="text-sm font-semibold">
+                        Inspection Details
+                      </p>
+                      <div className="mt-2 space-y-2 text-sm text-muted-foreground">
+                        <p>
+                          <strong>Sq. Footage:</strong>{" "}
+                          {job.square_footage ?? "N/A"}
+                        </p>
+                        <p>
+                          <strong>Insulation Type:</strong>{" "}
+                          {job.insulation_type || "N/A"}
+                        </p>
+                        <p>
+                          <strong>Labor Hours:</strong>{" "}
+                          {job.labor_hours ?? "N/A"}
+                        </p>
+                        <p>
+                          <strong>Observations:</strong>{" "}
+                          {job.admin_notes || "N/A"}
+                        </p>
+                        <p>
+                          <strong>Materials:</strong>{" "}
+                          {job.materials_notes || "N/A"}
+                        </p>
+                        <p>
+                          <strong>Rebates:</strong> {job.rebate_notes || "N/A"}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="rounded-2xl bg-secondary p-5">
+                      <p className="text-sm font-semibold">Estimate Details</p>
+                      <div className="mt-2 space-y-2 text-sm text-muted-foreground">
+                        <p>
+                          <strong>Amount:</strong>{" "}
+                          {job.manual_estimate_amount
+                            ? new Intl.NumberFormat("en-US", {
+                                style: "currency",
+                                currency: "USD",
+                              }).format(job.manual_estimate_amount)
+                            : "N/A"}
+                        </p>
+                        <p>
+                          <strong>Customer Notes:</strong>{" "}
+                          {job.customer_notes || "N/A"}
+                        </p>
+                        <p>
+                          <strong>Internal Notes:</strong>{" "}
+                          {job.internal_notes || "N/A"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {(job.status === "installation_requested" ||
+                    job.status === "installation_proposal_changes_requested" ||
+                    installationProposals.some(
+                      (p) => p.status === "accepted",
+                    )) && (
+                    <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                      <button
+                        type="button"
+                        onClick={approveInstallation}
+                        className="inline-flex h-12 cursor-pointer items-center justify-center rounded-full bg-primary px-7 text-sm font-semibold text-primary-foreground transition hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-md active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50"
                       >
-                        <p className="text-sm font-semibold text-amber-800">
-                          Customer Requested Changes
-                        </p>
-                        <p className="mt-2 text-sm text-amber-700">
-                          {proposal.change_request_message}
-                        </p>
-                      </div>
-                    ))}
-
-                  <div className="rounded-2xl bg-secondary p-5">
-                    <p className="text-sm font-semibold">Inspection Details</p>
-                    <div className="mt-2 space-y-2 text-sm text-muted-foreground">
-                      <p>
-                        <strong>Sq. Footage:</strong>{" "}
-                        {job.square_footage ?? "N/A"}
-                      </p>
-                      <p>
-                        <strong>Insulation Type:</strong>{" "}
-                        {job.insulation_type || "N/A"}
-                      </p>
-                      <p>
-                        <strong>Labor Hours:</strong> {job.labor_hours ?? "N/A"}
-                      </p>
-                      <p>
-                        <strong>Observations:</strong>{" "}
-                        {job.admin_notes || "N/A"}
-                      </p>
-                      <p>
-                        <strong>Materials:</strong>{" "}
-                        {job.materials_notes || "N/A"}
-                      </p>
-                      <p>
-                        <strong>Rebates:</strong> {job.rebate_notes || "N/A"}
-                      </p>
+                        <FileCheck className="mr-2 h-4 w-4" />
+                        Approve Installation
+                      </button>
                     </div>
-                  </div>
-
-                  <div className="rounded-2xl bg-secondary p-5">
-                    <p className="text-sm font-semibold">Estimate Details</p>
-                    <div className="mt-2 space-y-2 text-sm text-muted-foreground">
-                      <p>
-                        <strong>Amount:</strong>{" "}
-                        {job.manual_estimate_amount
-                          ? new Intl.NumberFormat("en-US", {
-                              style: "currency",
-                              currency: "USD",
-                            }).format(job.manual_estimate_amount)
-                          : "N/A"}
-                      </p>
-                      <p>
-                        <strong>Customer Notes:</strong>{" "}
-                        {job.customer_notes || "N/A"}
-                      </p>
-                      <p>
-                        <strong>Internal Notes:</strong>{" "}
-                        {job.internal_notes || "N/A"}
-                      </p>
-                    </div>
-                  </div>
+                  )}
                 </div>
+              )}
 
-                {(job.status === "installation_requested" ||
-                  job.status === "installation_proposal_changes_requested" ||
-                  installationProposals.some(
-                    (p) => p.status === "accepted",
-                  )) && (
-                  <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                    <button
-                      type="button"
-                      onClick={approveInstallation}
-                      className="inline-flex h-12 cursor-pointer items-center justify-center rounded-full bg-primary px-7 text-sm font-semibold text-primary-foreground transition hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-md active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      <FileCheck className="mr-2 h-4 w-4" />
-                      Approve Installation
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
+            {INSTALLATION_WORKFLOW_ENABLED &&
+              job.status === "installation_scheduled" && (
+                <div className="rounded-[2rem] border bg-white p-6 shadow-sm sm:p-8">
+                  <h2 className="text-2xl font-bold">Installation Scheduled</h2>
 
-            {job.status === "installation_scheduled" && (
-              <div className="rounded-[2rem] border bg-white p-6 shadow-sm sm:p-8">
-                <h2 className="text-2xl font-bold">Installation Scheduled</h2>
+                  <p className="mt-3 text-muted-foreground">
+                    Once the installation is finished, mark this job as
+                    completed.
+                  </p>
 
-                <p className="mt-3 text-muted-foreground">
-                  Once the installation is finished, mark this job as completed.
-                </p>
+                  <button
+                    type="button"
+                    onClick={completeJob}
+                    className="mt-8 inline-flex h-12 cursor-pointer items-center justify-center rounded-full bg-primary px-7 text-sm font-semibold text-primary-foreground transition hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-md"
+                  >
+                    Complete Job
+                  </button>
+                </div>
+              )}
 
-                <button
-                  type="button"
-                  onClick={completeJob}
-                  className="mt-8 inline-flex h-12 cursor-pointer items-center justify-center rounded-full bg-primary px-7 text-sm font-semibold text-primary-foreground transition hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-md"
-                >
-                  Complete Job
-                </button>
-              </div>
-            )}
-
-            {["reschedule_requested", "cancelled", "completed"].includes(
-              job.status,
-            ) && (
+            {[
+              "inspection_completed",
+              "reschedule_requested",
+              "cancelled",
+              "completed",
+            ].includes(job.status) && (
               <div className="rounded-[2rem] border bg-white p-8 shadow-sm">
                 <h2 className="text-2xl font-bold">
                   {statusLabels[job.status]}
                 </h2>
 
                 <p className="mt-3 text-muted-foreground">
-                  This stage will be expanded as the customer manage page,
-                  estimate email, and installation scheduling flow are wired.
+                  {job.status === "inspection_completed"
+                    ? "The inspection has been completed."
+                    : "No further scheduling action is needed for this request."}
                 </p>
               </div>
             )}

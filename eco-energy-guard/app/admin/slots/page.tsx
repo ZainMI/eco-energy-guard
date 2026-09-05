@@ -3,14 +3,9 @@
 import Link from "next/link";
 import { useEffect, useState, useMemo } from "react";
 import {
-  CalendarClock,
   Plus,
   Trash2,
-  Calendar as CalendarIcon,
   ArrowLeft,
-  ShieldCheck,
-  ShieldAlert,
-  Wrench,
   ChevronLeft,
   ChevronRight,
   Clock,
@@ -18,9 +13,8 @@ import {
 import Container from "@/components/layout/Container";
 import { createClient } from "@/lib/supabase/client";
 
-type SlotType = "inspection" | "installation";
+type SlotType = "inspection";
 type SlotMode = "single" | "recurring";
-type FilterType = "all" | "inspection" | "installation";
 
 type Slot = {
   id: string;
@@ -57,10 +51,6 @@ function getNextDateForWeekday(weekday: number) {
   return date.toISOString().split("T")[0];
 }
 
-function buildLocalDateTime(date: string, time: string) {
-  return new Date(`${date}T${time}`).toISOString();
-}
-
 function timeToMinutes(time: string) {
   const [hours, minutes] = time.split(":").map(Number);
   return hours * 60 + minutes;
@@ -70,12 +60,11 @@ export default function AdminSlotsPage() {
   const supabase = createClient();
 
   const [slots, setSlots] = useState<Slot[]>([]);
+  const [selectedSlotIds, setSelectedSlotIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
   const [mode, setMode] = useState<SlotMode>("single");
-  const [type, setType] = useState<SlotType>("inspection");
-  const [filter, setFilter] = useState<FilterType>("all");
 
   const [selectedDate, setSelectedDate] = useState("");
   const [currentCalendarDate, setCurrentCalendarDate] = useState(
@@ -96,6 +85,7 @@ export default function AdminSlotsPage() {
     const { data, error } = await supabase
       .from("slots")
       .select("*")
+      .eq("type", "inspection")
       .order("starts_at", { ascending: true });
 
     if (error) {
@@ -107,15 +97,9 @@ export default function AdminSlotsPage() {
     setLoading(false);
   }
 
-  // Filter slots down globally based on chosen segment filter type (all, inspection, installation)
-  const filteredSlotsByType = useMemo(() => {
-    if (filter === "all") return slots;
-    return slots.filter((slot) => slot.type === filter);
-  }, [slots, filter]);
-
   // Map unique local date strings that currently hold slots matching the filter
   const activeDateStrings = useMemo(() => {
-    const dates = filteredSlotsByType.map((slot) => {
+    const dates = slots.map((slot) => {
       const d = new Date(slot.starts_at);
       const year = d.getFullYear();
       const month = String(d.getMonth() + 1).padStart(2, "0");
@@ -123,19 +107,19 @@ export default function AdminSlotsPage() {
       return `${year}-${month}-${day}`;
     });
     return Array.from(new Set(dates));
-  }, [filteredSlotsByType]);
+  }, [slots]);
 
   // Final filtered list of slots to reveal inside the target timeline detail card view
   const slotsForSelectedDate = useMemo(() => {
     if (!selectedDate) return [];
-    return filteredSlotsByType.filter((slot) => {
+    return slots.filter((slot) => {
       const d = new Date(slot.starts_at);
       const year = d.getFullYear();
       const month = String(d.getMonth() + 1).padStart(2, "0");
       const day = String(d.getDate()).padStart(2, "0");
       return `${year}-${month}-${day}` === selectedDate;
     });
-  }, [selectedDate, filteredSlotsByType]);
+  }, [selectedDate, slots]);
 
   // Calendar Math Builder
   const calendarGrid = useMemo(() => {
@@ -195,12 +179,12 @@ export default function AdminSlotsPage() {
 
     const windowMinutes = timeToMinutes(endTime) - timeToMinutes(startTime);
 
-    if (type === "inspection" && windowMinutes < 60) {
+    if (windowMinutes < 60) {
       setMessage("An inspection availability window must be at least 1 hour.");
       return;
     }
 
-    if (type === "inspection" && windowMinutes % 60 !== 0) {
+    if (windowMinutes % 60 !== 0) {
       setMessage(
         "Inspection availability must divide evenly into 1-hour blocks.",
       );
@@ -210,17 +194,6 @@ export default function AdminSlotsPage() {
     const rows: NewSlot[] = [];
 
     function addAvailabilityWindow(targetDate: string) {
-      if (type === "installation") {
-        rows.push({
-          type,
-          starts_at: buildLocalDateTime(targetDate, startTime),
-          ends_at: buildLocalDateTime(targetDate, endTime),
-          notes: notes || null,
-          is_available: true,
-        });
-        return;
-      }
-
       const windowStart = new Date(`${targetDate}T${startTime}`);
       const windowEnd = new Date(`${targetDate}T${endTime}`);
 
@@ -232,7 +205,7 @@ export default function AdminSlotsPage() {
         const blockEnd = new Date(blockStart.getTime() + 60 * 60 * 1000);
 
         rows.push({
-          type,
+          type: "inspection",
           starts_at: blockStart.toISOString(),
           ends_at: blockEnd.toISOString(),
           notes: notes || null,
@@ -298,6 +271,7 @@ export default function AdminSlotsPage() {
       return;
     }
 
+    setSelectedSlotIds((current) => current.filter((id) => id !== slot.id));
     await loadSlots();
   }
 
@@ -314,6 +288,59 @@ export default function AdminSlotsPage() {
       return;
     }
 
+    setSelectedSlotIds((current) => current.filter((id) => id !== slotId));
+    await loadSlots();
+  }
+
+  function toggleSlotSelection(slotId: string) {
+    setSelectedSlotIds((current) =>
+      current.includes(slotId)
+        ? current.filter((id) => id !== slotId)
+        : [...current, slotId],
+    );
+  }
+
+  function toggleAllOpenSlots() {
+    const openSlotIds = slotsForSelectedDate
+      .filter((slot) => slot.is_available)
+      .map((slot) => slot.id);
+    const allOpenSelected = openSlotIds.every((id) =>
+      selectedSlotIds.includes(id),
+    );
+
+    setSelectedSlotIds((current) => {
+      if (allOpenSelected) {
+        return current.filter((id) => !openSlotIds.includes(id));
+      }
+
+      return Array.from(new Set([...current, ...openSlotIds]));
+    });
+  }
+
+  async function deleteSelectedSlots() {
+    if (selectedSlotIds.length === 0) return;
+
+    const confirmed = window.confirm(
+      `Are you sure you want to delete ${selectedSlotIds.length} selected availability slot${selectedSlotIds.length === 1 ? "" : "s"}?`,
+    );
+    if (!confirmed) return;
+
+    const { error } = await supabase
+      .from("slots")
+      .delete()
+      .in("id", selectedSlotIds)
+      .eq("is_available", true);
+
+    if (error) {
+      setMessage(error.message);
+      return;
+    }
+
+    const deletedCount = selectedSlotIds.length;
+    setSelectedSlotIds([]);
+    setMessage(
+      `${deletedCount} availability slot${deletedCount === 1 ? "" : "s"} deleted successfully.`,
+    );
     await loadSlots();
   }
 
@@ -379,38 +406,6 @@ export default function AdminSlotsPage() {
                     }`}
                   >
                     Weekly Recurring
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-stone-600 uppercase tracking-wider">
-                  Assignment Type
-                </label>
-                <div className="mt-2 grid grid-cols-2 gap-2 bg-stone-100 p-1 rounded-xl">
-                  <button
-                    type="button"
-                    onClick={() => setType("inspection")}
-                    className={`py-2 text-sm font-semibold rounded-lg transition flex items-center justify-center gap-1.5 cursor-pointer ${
-                      type === "inspection"
-                        ? "bg-primary text-primary-foreground shadow-sm"
-                        : "text-stone-500 hover:text-stone-900"
-                    }`}
-                  >
-                    <CalendarIcon className="h-3.5 w-3.5" />
-                    Inspection
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setType("installation")}
-                    className={`py-2 text-sm font-semibold rounded-lg transition flex items-center justify-center gap-1.5 cursor-pointer ${
-                      type === "installation"
-                        ? "bg-primary text-primary-foreground shadow-sm"
-                        : "text-stone-500 hover:text-stone-900"
-                    }`}
-                  >
-                    <Wrench className="h-3.5 w-3.5" />
-                    Installation
                   </button>
                 </div>
               </div>
@@ -493,13 +488,11 @@ export default function AdminSlotsPage() {
                 </div>
               </div>
 
-              {type === "inspection" && (
-                <p className="rounded-xl bg-emerald-50 px-4 py-3 text-xs font-medium leading-5 text-emerald-800">
-                  This window will be published as consecutive 1-hour
-                  appointments. For example, 9:00 AM–12:00 PM creates three
-                  bookable slots.
-                </p>
-              )}
+              <p className="rounded-xl bg-emerald-50 px-4 py-3 text-xs font-medium leading-5 text-emerald-800">
+                This window will be published as consecutive 1-hour inspection
+                appointments. For example, 9:00 AM–12:00 PM creates three
+                bookable slots.
+              </p>
 
               <div>
                 <label className="text-sm font-semibold text-stone-800">
@@ -519,9 +512,7 @@ export default function AdminSlotsPage() {
                 className="inline-flex h-12 w-full items-center justify-center rounded-full bg-primary px-7 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90 cursor-pointer"
               >
                 <Plus className="mr-2 h-4 w-4" />
-                {type === "inspection"
-                  ? "Publish 1-Hour Slots"
-                  : "Publish Availability"}
+                Publish 1-Hour Slots
               </button>
 
               {message && (
@@ -534,29 +525,11 @@ export default function AdminSlotsPage() {
 
           {/* COLUMN 2: Calendar Overview & Selected Date Drawer details */}
           <div className="space-y-6">
-            {/* Filtering Controls Ribbon Header */}
+            {/* Inspection availability summary */}
             <div className="flex flex-col gap-3 rounded-2xl border bg-white p-2 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-3">
-              <div className="flex flex-wrap gap-1">
-                {(["all", "inspection", "installation"] as FilterType[]).map(
-                  (typeOpt) => (
-                    <button
-                      key={typeOpt}
-                      type="button"
-                      onClick={() => {
-                        setFilter(typeOpt);
-                        setSelectedDate(""); // clear current day lookup view
-                      }}
-                      className={`cursor-pointer rounded-xl px-3 py-1.5 text-xs font-bold capitalize transition sm:px-4 ${
-                        filter === typeOpt
-                          ? "bg-stone-900 text-white"
-                          : "text-stone-500 hover:bg-stone-50"
-                      }`}
-                    >
-                      {typeOpt === "all" ? "All Slots" : `${typeOpt}s`}
-                    </button>
-                  ),
-                )}
-              </div>
+              <span className="rounded-xl bg-stone-900 px-4 py-1.5 text-xs font-bold text-white">
+                Inspection Slots
+              </span>
               <span className="text-xs text-muted-foreground font-semibold px-2">
                 {slots.length} Slots Total
               </span>
@@ -612,7 +585,10 @@ export default function AdminSlotsPage() {
                     <button
                       key={cell.dateString}
                       type="button"
-                      onClick={() => setSelectedDate(cell.dateString)}
+                      onClick={() => {
+                        setSelectedDate(cell.dateString);
+                        setSelectedSlotIds([]);
+                      }}
                       className={`relative flex h-11 w-full cursor-pointer flex-col items-center justify-center rounded-xl border text-sm transition
                         ${
                           isViewing
@@ -662,6 +638,35 @@ export default function AdminSlotsPage() {
                 </div>
               ) : (
                 <div className="grid gap-3">
+                  <div className="flex flex-col gap-3 rounded-2xl border bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+                    <label className="inline-flex cursor-pointer items-center gap-2 text-sm font-semibold text-stone-700">
+                      <input
+                        type="checkbox"
+                        checked={
+                          slotsForSelectedDate.some(
+                            (slot) => slot.is_available,
+                          ) &&
+                          slotsForSelectedDate
+                            .filter((slot) => slot.is_available)
+                            .every((slot) => selectedSlotIds.includes(slot.id))
+                        }
+                        onChange={toggleAllOpenSlots}
+                        className="h-4 w-4 accent-primary"
+                      />
+                      Select all open slots
+                    </label>
+
+                    <button
+                      type="button"
+                      onClick={deleteSelectedSlots}
+                      disabled={selectedSlotIds.length === 0}
+                      className="inline-flex h-9 items-center justify-center rounded-xl bg-red-600 px-4 text-xs font-bold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      <Trash2 className="mr-2 h-3.5 w-3.5" />
+                      Delete selected ({selectedSlotIds.length})
+                    </button>
+                  </div>
+
                   {slotsForSelectedDate.map((slot) => {
                     const isInspection = slot.type === "inspection";
                     return (
@@ -673,45 +678,61 @@ export default function AdminSlotsPage() {
                             : "border-l-emerald-500"
                         }`}
                       >
-                        <div className="space-y-1.5">
-                          <div className="flex items-center gap-2">
-                            <span
-                              className={`inline-flex items-center gap-1 rounded px-2 py-0.5 text-[10px] font-extrabold border uppercase ${
-                                isInspection
-                                  ? "bg-amber-50 text-amber-800 border-amber-200"
-                                  : "bg-emerald-50 text-emerald-800 border-emerald-200"
-                              }`}
-                            >
-                              {slot.type}
-                            </span>
-                            <span
-                              className={`inline-flex items-center gap-0.5 rounded px-2 py-0.5 text-[10px] font-bold border ${
-                                slot.is_available
-                                  ? "bg-blue-50 text-blue-700 border-blue-100"
-                                  : "bg-stone-50 text-stone-400 border-stone-100"
-                              }`}
-                            >
-                              {slot.is_available ? "Open / Active" : "Booked"}
-                            </span>
-                          </div>
-
-                          <p className="font-bold text-stone-900 text-sm">
-                            {new Date(slot.starts_at).toLocaleTimeString([], {
+                        <div className="flex items-start gap-3">
+                          <input
+                            type="checkbox"
+                            checked={selectedSlotIds.includes(slot.id)}
+                            disabled={!slot.is_available}
+                            onChange={() => toggleSlotSelection(slot.id)}
+                            aria-label={`Select ${new Date(
+                              slot.starts_at,
+                            ).toLocaleTimeString([], {
                               hour: "numeric",
                               minute: "2-digit",
-                            })}
-                            {" – "}
-                            {new Date(slot.ends_at).toLocaleTimeString([], {
-                              hour: "numeric",
-                              minute: "2-digit",
-                            })}
-                          </p>
+                            })} availability slot`}
+                            className="mt-1 h-4 w-4 shrink-0 accent-primary disabled:cursor-not-allowed disabled:opacity-30"
+                          />
 
-                          {slot.notes && (
-                            <p className="text-xs text-muted-foreground italic bg-stone-50 p-2 rounded border">
-                              {slot.notes}
+                          <div className="space-y-1.5">
+                            <div className="flex items-center gap-2">
+                              <span
+                                className={`inline-flex items-center gap-1 rounded px-2 py-0.5 text-[10px] font-extrabold border uppercase ${
+                                  isInspection
+                                    ? "bg-amber-50 text-amber-800 border-amber-200"
+                                    : "bg-emerald-50 text-emerald-800 border-emerald-200"
+                                }`}
+                              >
+                                {slot.type}
+                              </span>
+                              <span
+                                className={`inline-flex items-center gap-0.5 rounded px-2 py-0.5 text-[10px] font-bold border ${
+                                  slot.is_available
+                                    ? "bg-blue-50 text-blue-700 border-blue-100"
+                                    : "bg-stone-50 text-stone-400 border-stone-100"
+                                }`}
+                              >
+                                {slot.is_available ? "Open / Active" : "Booked"}
+                              </span>
+                            </div>
+
+                            <p className="font-bold text-stone-900 text-sm">
+                              {new Date(slot.starts_at).toLocaleTimeString([], {
+                                hour: "numeric",
+                                minute: "2-digit",
+                              })}
+                              {" – "}
+                              {new Date(slot.ends_at).toLocaleTimeString([], {
+                                hour: "numeric",
+                                minute: "2-digit",
+                              })}
                             </p>
-                          )}
+
+                            {slot.notes && (
+                              <p className="text-xs text-muted-foreground italic bg-stone-50 p-2 rounded border">
+                                {slot.notes}
+                              </p>
+                            )}
+                          </div>
                         </div>
 
                         <div className="flex items-center gap-2 sm:self-center self-end">
