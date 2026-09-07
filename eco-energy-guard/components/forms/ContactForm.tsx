@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import {
   sendContactMessageAction,
   type ContactFormState,
@@ -12,6 +12,7 @@ const initialContactFormState: ContactFormState = {
 };
 
 export default function ContactForm() {
+  const [startedAt] = useState(() => Date.now());
   const [state, formAction, pending] = useActionState(
     sendContactMessageAction,
     initialContactFormState,
@@ -27,7 +28,10 @@ export default function ContactForm() {
         Send us your question and one of our professionals will get back to you.
       </p>
 
-      <div className="pointer-events-none absolute -left-[9999px]" aria-hidden="true">
+      <div
+        className="pointer-events-none absolute -left-[9999px]"
+        aria-hidden="true"
+      >
         <label htmlFor="contact-website">Website</label>
         <input
           id="contact-website"
@@ -37,6 +41,7 @@ export default function ContactForm() {
           autoComplete="off"
         />
       </div>
+      <input type="hidden" name="startedAt" value={startedAt} />
 
       <div className="mt-8 grid gap-5 sm:grid-cols-2">
         <div>

@@ -1,6 +1,11 @@
 "use server";
 
 import { sendContactMessageNotificationEmail } from "@/lib/email/smtp";
+import { headers } from "next/headers";
+import {
+  isContactRateLimited,
+  looksLikeBusinessPromotion,
+} from "@/lib/contact-spam";
 
 export type ContactFormState = {
   status: "idle" | "success" | "error";
@@ -17,9 +22,23 @@ export async function sendContactMessageAction(
   const phone = String(formData.get("phone") || "").trim();
   const message = String(formData.get("message") || "").trim();
   const website = String(formData.get("website") || "").trim();
+  const startedAt = Number(formData.get("startedAt"));
 
   // Silently accept automated submissions caught by the honeypot.
   if (website) {
+    return {
+      status: "success",
+      message: "Thanks! Your message has been sent.",
+    };
+  }
+
+  const completionTime = Date.now() - startedAt;
+  if (
+    !Number.isFinite(startedAt) ||
+    completionTime < 3_000 ||
+    completionTime > 2 * 60 * 60 * 1000 ||
+    looksLikeBusinessPromotion(message)
+  ) {
     return {
       status: "success",
       message: "Thanks! Your message has been sent.",
@@ -50,6 +69,20 @@ export async function sendContactMessageAction(
     return {
       status: "error",
       message: "One or more fields are too long.",
+    };
+  }
+
+  const requestHeaders = await headers();
+  const ipAddress =
+    requestHeaders.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    requestHeaders.get("x-real-ip") ||
+    "unknown";
+
+  if (isContactRateLimited(ipAddress, email)) {
+    return {
+      status: "error",
+      message:
+        "Too many messages were submitted. Please wait 15 minutes or call us directly.",
     };
   }
 
