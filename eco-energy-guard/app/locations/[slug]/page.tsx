@@ -3,7 +3,13 @@ import Link from "next/link";
 import { ArrowLeft, ArrowRight, MapPin } from "lucide-react";
 import { notFound } from "next/navigation";
 import Container from "@/components/layout/Container";
-import { PHONE_DISPLAY, PHONE_HREF, services, towns, type Town } from "@/lib/site-content";
+import {
+  PHONE_DISPLAY,
+  PHONE_HREF,
+  services,
+  towns,
+  type Town,
+} from "@/lib/site-content";
 
 type Params = {
   slug: string;
@@ -31,6 +37,12 @@ export async function generateMetadata({
   return {
     title: `${town.name} Insulation Services`,
     description: town.description,
+    alternates: { canonical: `/locations/${town.slug}` },
+    openGraph: {
+      title: `${town.name} Insulation Services`,
+      description: town.description,
+      url: `/locations/${town.slug}`,
+    },
   };
 }
 

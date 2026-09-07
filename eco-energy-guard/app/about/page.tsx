@@ -12,6 +12,13 @@ import {
 import Container from "@/components/layout/Container";
 import { certificationImages } from "@/lib/certification-images";
 
+export const metadata: Metadata = {
+  title: "About Eco Energy Guard",
+  description:
+    "Meet Eco Energy Guard owner William Brown and learn about our certified, homeowner-first approach to insulation and energy efficiency in Connecticut.",
+  alternates: { canonical: "/about" },
+};
+
 const values = [
   {
     icon: Home,
@@ -52,7 +59,8 @@ export default function AboutPage() {
               </p>
 
               <h1 className="mt-4 text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
-                Central Connecticut&apos;s trusted insulation experts since 2008.
+                Central Connecticut&apos;s trusted insulation experts since
+                2008.
               </h1>
 
               <p className="mt-6 text-base leading-8 text-muted-foreground sm:text-lg">
@@ -214,9 +222,9 @@ export default function AboutPage() {
 
               <p className="mt-6 leading-8 text-muted-foreground">
                 We believe homeowners deserve clear answers — not confusing
-                technical jargon or pressure to purchase services they don&apos;t
-                need. Every project begins with a professional free inspection
-                and straightforward recommendations.
+                technical jargon or pressure to purchase services they
+                don&apos;t need. Every project begins with a professional free
+                inspection and straightforward recommendations.
               </p>
             </div>
 
@@ -259,10 +267,10 @@ export default function AboutPage() {
             </h2>
 
             <p className="mx-auto mt-6 max-w-2xl text-lg opacity-90">
-            Whether you&apos;re experiencing drafts, inconsistent temperatures,
-              rising energy costs, or simply want to make your home more
-              efficient — we&apos;re here to help. Free inspections, honest advice,
-              18+ years of experience.
+              Whether you&apos;re experiencing drafts, inconsistent
+              temperatures, rising energy costs, or simply want to make your
+              home more efficient — we&apos;re here to help. Free inspections,
+              honest advice, 18+ years of experience.
             </p>
 
             <div className="mt-10 flex flex-col justify-center gap-4 sm:flex-row">
@@ -284,7 +292,7 @@ export default function AboutPage() {
           </div>
         </Container>
       </section>
-
     </>
   );
 }
+import type { Metadata } from "next";

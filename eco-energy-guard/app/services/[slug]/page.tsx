@@ -38,6 +38,15 @@ export async function generateMetadata({
   return {
     title: service.title,
     description: service.shortDescription,
+    alternates: { canonical: `/services/${service.slug}` },
+    openGraph: {
+      title: service.title,
+      description: service.shortDescription,
+      url: `/services/${service.slug}`,
+      images: getServiceImage(service.slug)
+        ? [{ url: getServiceImage(service.slug)! }]
+        : undefined,
+    },
   };
 }
 
@@ -66,7 +75,9 @@ export default async function ServiceDetailPage({
             <ArrowLeft className="h-4 w-4" />
             Back to All Services
           </Link>
-          <div className={`mt-5 grid items-center gap-10 ${image ? "lg:grid-cols-2" : ""}`}>
+          <div
+            className={`mt-5 grid items-center gap-10 ${image ? "lg:grid-cols-2" : ""}`}
+          >
             <div>
               <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
                 {service.title}
@@ -96,7 +107,9 @@ export default async function ServiceDetailPage({
           <div className="grid gap-6 md:grid-cols-3">
             <div className="rounded-3xl border bg-white p-6 shadow-sm">
               <Home className="h-6 w-6 text-primary" />
-              <h2 className="mt-4 text-xl font-bold">How it improves your home</h2>
+              <h2 className="mt-4 text-xl font-bold">
+                How it improves your home
+              </h2>
               <p className="mt-3 leading-7 text-muted-foreground">
                 {service.homeBenefit}
               </p>

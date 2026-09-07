@@ -48,7 +48,9 @@ const services = featuredServiceConfigs
       image: getServiceImage(service.slug),
     };
   })
-  .filter((service): service is NonNullable<typeof service> => service !== null);
+  .filter(
+    (service): service is NonNullable<typeof service> => service !== null,
+  );
 
 const reviews = [
   {
@@ -98,7 +100,9 @@ export default function HomePage() {
               Upgrading your house with our insulation services is an investment
               in year-round comfort and lower utility costs. As an Energize CT
               partner, we help homeowners save up to{" "}
-              <strong className="text-foreground">20% on energy bills per year</strong>{" "}
+              <strong className="text-foreground">
+                20% on energy bills per year
+              </strong>{" "}
               with improvements designed for long-term value.
             </p>
 
@@ -499,8 +503,8 @@ export default function HomePage() {
               Call, email or book online for a free inspection.
             </h2>
             <p className="mt-5 text-lg opacity-90">
-              No pressure. No obligation. Just honest answers about your home&apos;s
-              insulation and energy efficiency.
+              No pressure. No obligation. Just honest answers about your
+              home&apos;s insulation and energy efficiency.
             </p>
 
             <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -524,3 +528,7 @@ export default function HomePage() {
     </>
   );
 }
+import type { Metadata } from "next";
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};

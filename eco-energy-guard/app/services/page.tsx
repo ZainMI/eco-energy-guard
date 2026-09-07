@@ -18,6 +18,13 @@ import ImagePlaceholder from "@/components/ui/image-placeholder";
 import { PHONE_DISPLAY, PHONE_HREF, services } from "@/lib/site-content";
 import { getServiceImage } from "@/lib/service-images";
 
+export const metadata: Metadata = {
+  title: "Insulation & Home Energy Services",
+  description:
+    "Explore insulation, air sealing, attic ventilation, thermal imaging, and home energy services from Eco Energy Guard in Central Connecticut.",
+  alternates: { canonical: "/services" },
+};
+
 const iconMap: Record<string, LucideIcon> = {
   "foam-air-sealing": ShieldCheck,
   "blown-in-fiberglass-insulation": Sparkles,
@@ -148,3 +155,4 @@ export default function ServicesPage() {
     </>
   );
 }
+import type { Metadata } from "next";

@@ -3,6 +3,13 @@ import Container from "@/components/layout/Container";
 import BeforeAfterCard from "@/components/gallery/BeforeAfterCard";
 import { getGalleryProjects } from "@/lib/gallery";
 
+export const metadata: Metadata = {
+  title: "Insulation Project Gallery",
+  description:
+    "View insulation, air sealing, and home energy project results completed by Eco Energy Guard across Central Connecticut.",
+  alternates: { canonical: "/gallery" },
+};
+
 export default function GalleryPage() {
   const projects = getGalleryProjects();
 
@@ -34,8 +41,8 @@ export default function GalleryPage() {
               <h2 className="text-2xl font-bold">No gallery projects yet</h2>
 
               <p className="mt-3 text-muted-foreground">
-                Add project folders inside <code>public/images/Gallery</code> containing
-                before/after images and a project.json file.
+                Add project folders inside <code>public/images/Gallery</code>{" "}
+                containing before/after images and a project.json file.
               </p>
             </div>
           ) : (
@@ -60,8 +67,8 @@ export default function GalleryPage() {
             </h2>
 
             <p className="mt-5 text-lg opacity-90">
-              Start with a home energy inspection and we&apos;ll help determine the
-              best upgrades for your home.
+              Start with a home energy inspection and we&apos;ll help determine
+              the best upgrades for your home.
             </p>
 
             <Link
@@ -76,3 +83,4 @@ export default function GalleryPage() {
     </>
   );
 }
+import type { Metadata } from "next";

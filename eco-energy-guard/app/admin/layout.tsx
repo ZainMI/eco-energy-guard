@@ -1,6 +1,11 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
+export const metadata: Metadata = {
+  title: "Administration",
+  robots: { index: false, follow: false },
+};
+
 export default async function AdminLayout({
   children,
 }: {
@@ -45,3 +50,4 @@ export default async function AdminLayout({
 
   return <>{children}</>;
 }
+import type { Metadata } from "next";

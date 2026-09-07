@@ -8,6 +8,13 @@ import {
   PHONE_DISPLAY,
 } from "@/lib/site-content";
 
+export const metadata: Metadata = {
+  title: "Contact Eco Energy Guard",
+  description:
+    "Contact Eco Energy Guard with questions about home energy inspections, insulation, and air sealing in Central Connecticut.",
+  alternates: { canonical: "/contact" },
+};
+
 export default function ContactPage() {
   return (
     <>
@@ -87,3 +94,4 @@ export default function ContactPage() {
     </>
   );
 }
+import type { Metadata } from "next";

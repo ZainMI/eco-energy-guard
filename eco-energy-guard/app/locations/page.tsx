@@ -8,6 +8,13 @@ import {
   towns,
 } from "@/lib/site-content";
 
+export const metadata: Metadata = {
+  title: "Connecticut Service Areas",
+  description:
+    "Find Eco Energy Guard insulation and home energy services in towns throughout Central Connecticut.",
+  alternates: { canonical: "/locations" },
+};
+
 export default function LocationsPage() {
   return (
     <>
@@ -75,3 +82,4 @@ export default function LocationsPage() {
     </>
   );
 }
+import type { Metadata } from "next";
