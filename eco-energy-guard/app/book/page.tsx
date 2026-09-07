@@ -19,6 +19,7 @@ import { createClient } from "@/lib/supabase/client";
 import AddressAutocomplete from "@/components/forms/AddressAutocomplete";
 import { distanceMiles } from "@/lib/location";
 import { PHONE_DISPLAY } from "@/lib/site-content";
+import ContactAction from "@/components/ui/ContactAction";
 import { createInspectionRequestAction } from "@/actions/inspection-requests";
 
 type Slot = {
@@ -590,14 +591,21 @@ export default function BookPage() {
                   Prefer to contact directly?
                 </h2>
                 <div className="mt-5 space-y-3 text-sm">
-                  <p className="flex items-center gap-3">
+                  <div className="flex items-center gap-3">
                     <Phone className="h-4 w-4 text-primary" />
-                    {PHONE_DISPLAY}
-                  </p>
-                  <p className="flex items-center gap-3">
+                    <ContactAction
+                      type="phone"
+                      value="+18606905465"
+                      displayValue={PHONE_DISPLAY}
+                    />
+                  </div>
+                  <div className="flex items-center gap-3">
                     <Mail className="h-4 w-4 text-primary" />
-                    info@ecoenergyguard.com
-                  </p>
+                    <ContactAction
+                      type="email"
+                      value="info@ecoenergyguard.com"
+                    />
+                  </div>
                 </div>
               </div>
             </aside>

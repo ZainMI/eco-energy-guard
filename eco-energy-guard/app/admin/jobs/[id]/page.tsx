@@ -19,6 +19,7 @@ import {
   XCircle,
 } from "lucide-react";
 import Container from "@/components/layout/Container";
+import ContactAction from "@/components/ui/ContactAction";
 import { createClient } from "@/lib/supabase/client";
 import {
   approveInspectionAction,
@@ -460,15 +461,21 @@ export default function AdminJobPage() {
               <h2 className="text-2xl font-bold">Customer</h2>
 
               <div className="mt-5 space-y-3 text-sm text-muted-foreground">
-                <p className="flex items-center gap-2">
+                <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4 text-primary" />
-                  {customer?.email}
-                </p>
+                  {customer?.email && (
+                    <ContactAction type="email" value={customer.email} />
+                  )}
+                </div>
 
-                <p className="flex items-center gap-2">
+                <div className="flex items-center gap-2">
                   <Phone className="h-4 w-4 text-primary" />
-                  {customer?.phone || "No phone provided"}
-                </p>
+                  {customer?.phone ? (
+                    <ContactAction type="phone" value={customer.phone} />
+                  ) : (
+                    "No phone provided"
+                  )}
+                </div>
 
                 <p>
                   {[

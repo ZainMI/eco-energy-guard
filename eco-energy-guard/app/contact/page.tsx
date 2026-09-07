@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Clock, Mail, MapPin, Phone } from "lucide-react";
 import Container from "@/components/layout/Container";
 import ContactForm from "@/components/forms/ContactForm";
+import ContactAction from "@/components/ui/ContactAction";
 import {
   FREE_INSPECTION_CTA,
   HOURS_DISPLAY,
@@ -45,15 +46,22 @@ export default function ContactPage() {
               <div className="rounded-3xl border bg-white p-6 shadow-sm">
                 <Phone className="h-6 w-6 text-primary" />
                 <h2 className="mt-4 text-xl font-bold">Phone</h2>
-                <p className="mt-2 text-muted-foreground">{PHONE_DISPLAY}</p>
+                <ContactAction
+                  type="phone"
+                  value="+18606905465"
+                  displayValue={PHONE_DISPLAY}
+                  className="mt-2"
+                />
               </div>
 
               <div className="rounded-3xl border bg-white p-6 shadow-sm">
                 <Mail className="h-6 w-6 text-primary" />
                 <h2 className="mt-4 text-xl font-bold">Email</h2>
-                <p className="mt-2 text-muted-foreground">
-                  info@ecoenergyguard.com
-                </p>
+                <ContactAction
+                  type="email"
+                  value="info@ecoenergyguard.com"
+                  className="mt-2"
+                />
               </div>
 
               <div className="rounded-3xl border bg-white p-6 shadow-sm">

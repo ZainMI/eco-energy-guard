@@ -30,7 +30,12 @@ export default function Footer() {
                 <Phone className="h-4 w-4" />
                 {PHONE_DISPLAY}
               </a>
-              <p>info@ecoenergyguard.com</p>
+              <a
+                href="mailto:info@ecoenergyguard.com"
+                className="font-semibold text-foreground hover:text-primary"
+              >
+                info@ecoenergyguard.com
+              </a>
               <p>Serving Central Connecticut</p>
             </div>
           </div>
@@ -38,12 +43,36 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold">Quick Links</h4>
             <div className="mt-4 flex flex-col gap-3 text-muted-foreground">
-              <Link href="/" className="hover:text-foreground transition">Home</Link>
-              <Link href="/about" className="hover:text-foreground transition">About</Link>
-              <Link href="/services" className="hover:text-foreground transition">Services</Link>
-              <Link href="/gallery" className="hover:text-foreground transition">Gallery</Link>
-              <Link href="/locations" className="hover:text-foreground transition">Locations</Link>
-              <Link href="/contact" className="hover:text-foreground transition">Contact</Link>
+              <Link href="/" className="hover:text-foreground transition">
+                Home
+              </Link>
+              <Link href="/about" className="hover:text-foreground transition">
+                About
+              </Link>
+              <Link
+                href="/services"
+                className="hover:text-foreground transition"
+              >
+                Services
+              </Link>
+              <Link
+                href="/gallery"
+                className="hover:text-foreground transition"
+              >
+                Gallery
+              </Link>
+              <Link
+                href="/locations"
+                className="hover:text-foreground transition"
+              >
+                Locations
+              </Link>
+              <Link
+                href="/contact"
+                className="hover:text-foreground transition"
+              >
+                Contact
+              </Link>
             </div>
           </div>
 
@@ -59,16 +88,26 @@ export default function Footer() {
                   {service.title}
                 </Link>
               ))}
-              <Link href="/services" className="hover:text-foreground transition">All Services</Link>
-              <Link href="/book" className="font-semibold text-primary hover:text-primary/80 transition">Book Free Inspection →</Link>
+              <Link
+                href="/services"
+                className="hover:text-foreground transition"
+              >
+                All Services
+              </Link>
+              <Link
+                href="/book"
+                className="font-semibold text-primary hover:text-primary/80 transition"
+              >
+                Book Free Inspection →
+              </Link>
             </div>
           </div>
         </div>
 
         <div className="mt-12 flex flex-col items-center justify-center gap-3 border-t pt-8 text-center text-sm text-muted-foreground sm:flex-row">
           <span>
-            © {new Date().getFullYear()} Eco Energy Guard. All rights reserved. ·
-            Est. 2008 · Central Connecticut
+            © {new Date().getFullYear()} Eco Energy Guard. All rights reserved.
+            · Est. 2008 · Central Connecticut
           </span>
           <Link
             href="/login"
