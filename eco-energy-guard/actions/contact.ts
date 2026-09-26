@@ -20,6 +20,7 @@ export async function sendContactMessageAction(
   const lastName = String(formData.get("lastName") || "").trim();
   const email = String(formData.get("email") || "").trim();
   const phone = String(formData.get("phone") || "").trim();
+  const address = String(formData.get("address") || "").trim();
   const message = String(formData.get("message") || "").trim();
   const website = String(formData.get("website") || "").trim();
   const startedAt = Number(formData.get("startedAt"));
@@ -45,7 +46,7 @@ export async function sendContactMessageAction(
     };
   }
 
-  if (!firstName || !lastName || !email || !phone || !message) {
+  if (!firstName || !lastName || !email || !phone || !address || !message) {
     return {
       status: "error",
       message: "Please complete all required fields.",
@@ -64,6 +65,7 @@ export async function sendContactMessageAction(
     lastName.length > 80 ||
     email.length > 254 ||
     phone.length > 40 ||
+    address.length > 300 ||
     message.length > 5000
   ) {
     return {
@@ -91,6 +93,7 @@ export async function sendContactMessageAction(
       customerName: `${firstName} ${lastName}`,
       customerEmail: email,
       customerPhone: phone,
+      address,
       message,
     });
 

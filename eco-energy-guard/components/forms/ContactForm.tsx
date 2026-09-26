@@ -107,6 +107,24 @@ export default function ContactForm() {
         </div>
 
         <div className="sm:col-span-2">
+          <label htmlFor="contact-address" className="text-sm font-semibold">
+            Property address <span className="text-red-600">*</span>
+          </label>
+          <input
+            id="contact-address"
+            name="address"
+            required
+            maxLength={300}
+            autoComplete="street-address"
+            className="mt-2 h-12 w-full rounded-xl border bg-background px-4 outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/10"
+            placeholder="55 Main Street, Hartford, CT 06103"
+          />
+          <p className="mt-2 text-xs text-muted-foreground">
+            Please include the street number, town, state, and ZIP code.
+          </p>
+        </div>
+
+        <div className="sm:col-span-2">
           <label htmlFor="contact-message" className="text-sm font-semibold">
             Message <span className="text-red-600">*</span>
           </label>

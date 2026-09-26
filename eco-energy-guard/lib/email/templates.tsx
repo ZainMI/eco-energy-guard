@@ -13,16 +13,19 @@ export function contactMessageNotificationHtml({
   customerName,
   customerEmail,
   customerPhone,
+  address,
   message,
 }: {
   customerName: string;
   customerEmail: string;
   customerPhone: string;
+  address: string;
   message: string;
 }) {
   const safeName = escapeHtml(customerName);
   const safeEmail = escapeHtml(customerEmail);
   const safePhone = escapeHtml(customerPhone);
+  const safeAddress = escapeHtml(address);
   const safeMessage = escapeHtml(message).replaceAll("\n", "<br />");
 
   return `
@@ -34,6 +37,7 @@ export function contactMessageNotificationHtml({
         <p><strong>Name:</strong> ${safeName}</p>
         <p><strong>Email:</strong> <a href="mailto:${safeEmail}">${safeEmail}</a></p>
         <p><strong>Phone:</strong> ${safePhone}</p>
+        <p><strong>Property address:</strong> ${safeAddress}</p>
       </div>
 
       <div style="border:1px solid #ddd; border-radius:16px; padding:20px; margin:24px 0;">

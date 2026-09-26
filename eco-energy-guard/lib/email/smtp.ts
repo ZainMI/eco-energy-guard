@@ -33,11 +33,13 @@ export async function sendContactMessageNotificationEmail({
   customerName,
   customerEmail,
   customerPhone,
+  address,
   message,
 }: {
   customerName: string;
   customerEmail: string;
   customerPhone: string;
+  address: string;
   message: string;
 }) {
   const result = await transporter.sendMail({
@@ -49,6 +51,7 @@ export async function sendContactMessageNotificationEmail({
       customerName,
       customerEmail,
       customerPhone,
+      address,
       message,
     }),
   });
