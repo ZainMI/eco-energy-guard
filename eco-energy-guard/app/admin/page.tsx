@@ -45,6 +45,7 @@ type Job = {
     address: string | null;
     city: string | null;
     state: string | null;
+    zip: string | null;
   } | null;
 };
 
@@ -105,7 +106,8 @@ export default function AdminPage() {
             phone,
             address,
             city,
-            state
+            state,
+            zip
           ),
           inspection_slot:inspection_slot_id(id, starts_at, ends_at)
         `,
@@ -153,7 +155,12 @@ export default function AdminPage() {
         const customerName = customer
           ? `${customer.first_name} ${customer.last_name}`.toLowerCase()
           : "";
-        const location = [customer?.address, customer?.city, customer?.state]
+        const location = [
+          customer?.address,
+          customer?.city,
+          customer?.state,
+          customer?.zip,
+        ]
           .filter(Boolean)
           .join(", ")
           .toLowerCase();
@@ -340,6 +347,7 @@ export default function AdminPage() {
                       customer?.address,
                       customer?.city,
                       customer?.state,
+                      customer?.zip,
                     ]
                       .filter(Boolean)
                       .join(", ");

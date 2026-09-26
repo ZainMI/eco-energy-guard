@@ -16,6 +16,7 @@ import {
   UserCheck,
   Plus,
   FileCheck,
+  Pencil,
   XCircle,
 } from "lucide-react";
 import Container from "@/components/layout/Container";
@@ -29,6 +30,7 @@ import {
   sendEstimateAction,
   resendLastEmailAction,
   requestInspectionRescheduleAction,
+  updateCustomerAddressAction,
 } from "@/actions/jobs";
 
 type JobStatus =
@@ -110,6 +112,7 @@ export default function AdminJobPage() {
   const [selectedTeamIds, setSelectedTeamIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
+  const [editingAddress, setEditingAddress] = useState(false);
   type InstallationProposalRow = {
     day_number: number;
     date: string;
@@ -210,6 +213,24 @@ export default function AdminJobPage() {
     setMessage(result.message);
 
     if (result.ok) {
+      await loadJob();
+    }
+  }
+
+  async function saveCustomerAddress() {
+    if (!job?.customers) return;
+
+    setMessage("");
+    const result = await updateCustomerAddressAction(job.id, {
+      address: job.customers.address || "",
+      city: job.customers.city || "",
+      state: job.customers.state || "",
+      zip: job.customers.zip || "",
+    });
+
+    setMessage(result.message);
+    if (result.ok) {
+      setEditingAddress(false);
       await loadJob();
     }
   }
@@ -477,16 +498,82 @@ export default function AdminJobPage() {
                   )}
                 </div>
 
-                <p>
-                  {[
-                    customer?.address,
-                    customer?.city,
-                    customer?.state,
-                    customer?.zip,
-                  ]
-                    .filter(Boolean)
-                    .join(", ") || "No address provided"}
-                </p>
+                {editingAddress && customer ? (
+                  <div className="rounded-2xl border bg-stone-50 p-4">
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {(
+                        [
+                          ["Street address / unit", "address"],
+                          ["Town / city", "city"],
+                          ["State", "state"],
+                          ["ZIP code", "zip"],
+                        ] as const
+                      ).map(([label, field]) => (
+                        <label
+                          key={field}
+                          className={field === "address" ? "sm:col-span-2" : ""}
+                        >
+                          <span className="text-xs font-semibold text-foreground">
+                            {label}
+                          </span>
+                          <input
+                            value={customer[field] || ""}
+                            onChange={(event) =>
+                              setJob({
+                                ...job,
+                                customers: {
+                                  ...customer,
+                                  [field]: event.target.value,
+                                },
+                              })
+                            }
+                            className="mt-1 h-10 w-full rounded-xl border bg-white px-3 text-sm outline-none focus:border-primary"
+                          />
+                        </label>
+                      ))}
+                    </div>
+                    <div className="mt-3 flex gap-2">
+                      <button
+                        type="button"
+                        onClick={saveCustomerAddress}
+                        className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground"
+                      >
+                        Save address
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingAddress(false);
+                          loadJob();
+                        }}
+                        className="rounded-full border bg-white px-4 py-2 text-xs font-semibold"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <p>
+                      {[
+                        customer?.address,
+                        customer?.city,
+                        customer?.state,
+                        customer?.zip,
+                      ]
+                        .filter(Boolean)
+                        .join(", ") || "No address provided"}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setEditingAddress(true)}
+                      className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                      Edit address
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 

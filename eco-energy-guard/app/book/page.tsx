@@ -173,8 +173,13 @@ export default function BookPage() {
       return;
     }
 
-    if (!address) {
-      setMessage("Please select or enter your property address.");
+    if (!address || !city || !stateValue || !zip) {
+      setMessage("Please confirm the complete property address.");
+      return;
+    }
+
+    if (!/^\d/.test(address.trim())) {
+      setMessage("Please include the property street number in the address.");
       return;
     }
 
@@ -334,21 +339,67 @@ export default function BookPage() {
                       }}
                     />
                   ) : (
-                    <div className="mt-2">
-                      <div className="rounded-2xl bg-secondary p-4 font-medium text-foreground">
-                        {[address, city, stateValue, zip]
-                          .filter(Boolean)
-                          .join(", ")}
+                    <div className="mt-2 rounded-2xl border bg-secondary p-4">
+                      <p className="text-sm font-semibold">
+                        Confirm the complete property address
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Add the house number and unit number if they are missing.
+                      </p>
+                      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                        <label className="sm:col-span-2 text-xs font-semibold">
+                          Street address / unit
+                          <input
+                            value={address}
+                            onChange={(event) => setAddress(event.target.value)}
+                            autoComplete="street-address"
+                            className="mt-1 h-11 w-full rounded-xl border bg-white px-3 text-sm outline-none focus:border-primary"
+                          />
+                        </label>
+                        <label className="text-xs font-semibold">
+                          Town / city
+                          <input
+                            value={city}
+                            onChange={(event) => setCity(event.target.value)}
+                            autoComplete="address-level2"
+                            className="mt-1 h-11 w-full rounded-xl border bg-white px-3 text-sm outline-none focus:border-primary"
+                          />
+                        </label>
+                        <label className="text-xs font-semibold">
+                          State
+                          <input
+                            value={stateValue}
+                            onChange={(event) => setStateValue(event.target.value)}
+                            autoComplete="address-level1"
+                            className="mt-1 h-11 w-full rounded-xl border bg-white px-3 text-sm outline-none focus:border-primary"
+                          />
+                        </label>
+                        <label className="text-xs font-semibold">
+                          ZIP code
+                          <input
+                            value={zip}
+                            onChange={(event) => setZip(event.target.value)}
+                            inputMode="numeric"
+                            autoComplete="postal-code"
+                            className="mt-1 h-11 w-full rounded-xl border bg-white px-3 text-sm outline-none focus:border-primary"
+                          />
+                        </label>
                       </div>
                       <button
                         type="button"
                         onClick={() => {
                           setAddress("");
+                          setCity("");
+                          setStateValue("");
+                          setZip("");
+                          setLatitude(null);
+                          setLongitude(null);
+                          setOsmPlaceId("");
                           setServiceAreaError("");
                         }}
                         className="mt-2 text-sm font-semibold text-primary transition hover:opacity-80"
                       >
-                        Change address
+                        Search for a different address
                       </button>
                     </div>
                   )}

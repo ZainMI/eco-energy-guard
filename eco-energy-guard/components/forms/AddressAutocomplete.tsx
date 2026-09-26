@@ -60,7 +60,9 @@ export default function AddressAutocomplete({
   }, [query]);
 
   function handleSelect(result: AddressResult) {
-    const street = [result.address?.house_number, result.address?.road]
+    const typedStreetNumber = query.trim().match(/^(\d+[A-Za-z-]*)\b/)?.[1];
+    const streetNumber = result.address?.house_number || typedStreetNumber;
+    const street = [streetNumber, result.address?.road]
       .filter(Boolean)
       .join(" ");
 
@@ -91,8 +93,14 @@ export default function AddressAutocomplete({
         value={query}
         onChange={(event) => setQuery(event.target.value)}
         className="mt-2 h-12 w-full rounded-xl border bg-background px-4 outline-none focus:border-primary focus:ring-4 focus:ring-primary/10"
-        placeholder="Start typing your address..."
+        placeholder="Start with the street number, e.g. 55 Main Street..."
+        autoComplete="street-address"
       />
+
+      <p className="mt-2 text-xs text-muted-foreground">
+        Include the street number, then select the closest match. You can confirm
+        or correct it before submitting.
+      </p>
 
       {loading && (
         <p className="mt-2 text-sm text-muted-foreground">

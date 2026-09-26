@@ -33,9 +33,29 @@ export async function createInspectionRequestAction(
   const email = input.email.trim();
   const phone = input.phone.trim();
   const address = input.address.trim();
+  const city = input.city.trim();
+  const state = input.state.trim();
+  const zip = input.zip.trim();
 
-  if (!firstName || !lastName || !email || !phone || !address || !input.slotId) {
+  if (
+    !firstName ||
+    !lastName ||
+    !email ||
+    !phone ||
+    !address ||
+    !city ||
+    !state ||
+    !zip ||
+    !input.slotId
+  ) {
     return { ok: false, message: "Please fill out all required fields." };
+  }
+
+  if (!/^\d/.test(address)) {
+    return {
+      ok: false,
+      message: "Please include the property street number in the address.",
+    };
   }
 
   const supabase = await createClient();
@@ -61,9 +81,9 @@ export async function createInspectionRequestAction(
     email,
     phone,
     address,
-    city: input.city.trim() || null,
-    state: input.state.trim() || null,
-    zip: input.zip.trim() || null,
+    city,
+    state,
+    zip,
     latitude: input.latitude,
     longitude: input.longitude,
     osm_place_id: input.osmPlaceId.trim() || null,
@@ -94,13 +114,14 @@ export async function createInspectionRequestAction(
 
   try {
     const siteUrl = process.env.SITE_URL || PRODUCTION_SITE_URL;
+    const fullAddress = [address, city, state, zip].join(", ");
     await sendInspectionRequestNotificationEmail({
       customerName: `${firstName} ${lastName}`,
       customerEmail: email,
       customerPhone: phone,
       startsAt: slot.starts_at,
       endsAt: slot.ends_at,
-      address,
+      address: fullAddress,
       issueNotes: input.issueNotes.trim() || null,
       adminLink: `${siteUrl.replace(/\/$/, "")}/admin`,
     });

@@ -67,6 +67,50 @@ async function createManageToken(jobId: string) {
   return data?.token || null;
 }
 
+export async function updateCustomerAddressAction(
+  jobId: string,
+  input: { address: string; city: string; state: string; zip: string },
+): Promise<ActionResult> {
+  const access = await requireSchedulerAccess();
+  if (!access.ok) return access;
+
+  const address = input.address.trim();
+  const city = input.city.trim();
+  const state = input.state.trim();
+  const zip = input.zip.trim();
+
+  if (!address || !city || !state || !zip) {
+    return { ok: false, message: "Please enter the complete address." };
+  }
+
+  if (!/^\d/.test(address)) {
+    return {
+      ok: false,
+      message: "Please include the property street number.",
+    };
+  }
+
+  const supabase = await createClient();
+  const { data: job, error: jobError } = await supabase
+    .from("jobs")
+    .select("customer_id")
+    .eq("id", jobId)
+    .single();
+
+  if (jobError || !job?.customer_id) {
+    return { ok: false, message: "Customer record not found." };
+  }
+
+  const { error } = await supabase
+    .from("customers")
+    .update({ address, city, state, zip })
+    .eq("id", job.customer_id);
+
+  if (error) return { ok: false, message: error.message };
+
+  return { ok: true, message: "Customer address updated." };
+}
+
 export async function approveInspectionAction(
   jobId: string,
   inspectionTeamIds: string[],
